@@ -16,6 +16,22 @@
 - 小组赛蒙特卡洛排名、可配置淘汰赛对阵与“避强路径”启发式。
 - 自包含 HTML：内联数据、CSS、JavaScript、SVG，离线打开不发网络请求。
 
+## 真实数据报告
+
+以下截图使用 2026-06-29 竞彩数据源快照生成，展示真实球队、官方 SP、模型概率与价值分析；并非演示球队数据。
+
+<p align="center">
+  <img src="docs/assets/real-data-overview.jpg" alt="竞彩足球真实数据报告首页" width="100%">
+</p>
+
+<details>
+  <summary><strong>展开查看五类玩法详情</strong></summary>
+  <br>
+  <p align="center">
+    <img src="docs/assets/real-data-markets.jpg" alt="竞彩足球胜平负、让球、比分、总进球与半全场详情" width="100%">
+  </p>
+</details>
+
 ## 安装
 
 需要 Node.js 18+ 和 Python 3.10+：
@@ -131,6 +147,14 @@ python /path/to/skill-creator/scripts/quick_validate.py skill/football-predictio
 ```
 
 架构、Provider 边界和降级策略见 [`docs/architecture.md`](docs/architecture.md)。欢迎提交 Issue 与 Pull Request。
+
+## 支持项目
+
+<p align="center"><strong>如果觉得对您有帮助，请我喝杯啤酒吧 🍺</strong></p>
+
+<p align="center">
+  <img src="docs/assets/wechat-pay.jpg" alt="微信支付收款二维码" width="300">
+</p>
 
 ## License
 

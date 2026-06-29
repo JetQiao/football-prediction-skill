@@ -11,6 +11,7 @@
   "files": [
     "bin",
     "skill",
+    "docs/assets/*.jpg",
     "src/football_prediction/**/*.py",
     "src/football_prediction/reporting/templates/*.html",
     "pyproject.toml",
