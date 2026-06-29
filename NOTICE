@@ -2,6 +2,10 @@ football-prediction-skill integrates with, but does not redistribute, the
 SportteryAPI project by Johnserf-Seed (MIT License):
 https://github.com/Johnserf-Seed/SportteryAPI
 
+The report interface draws visual-system inspiration from WORLD CUP AI HUB
+contributors (MIT License):
+https://github.com/netz888/WORLD-CUP-AI-HUB
+
 Runtime data can be obtained from third-party services. Their data, trademarks,
 terms of use, rate limits and licenses are not covered by this repository's MIT
 License. Users are responsible for complying with each source's terms.

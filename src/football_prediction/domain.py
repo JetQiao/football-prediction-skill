@@ -66,6 +66,35 @@ class ThreeWayOdds:
 
 
 @dataclass(frozen=True)
+class MarketOutcomeOdds:
+    """竞彩单个玩法选项的官方 SP。"""
+
+    code: str
+    key: str
+    label: str
+    odds: float
+    trend: str = "unknown"
+
+    def __post_init__(self) -> None:
+        if self.odds <= 1:
+            raise ValueError("竞彩 SP 必须大于 1")
+
+
+@dataclass(frozen=True)
+class BettingMarketOdds:
+    """标准化后的竞彩玩法，兼容官方接口与 SportteryAPI。"""
+
+    code: str
+    label: str
+    outcomes: tuple[MarketOutcomeOdds, ...]
+    updated_at: str = ""
+    line: float | None = None
+
+    def get(self, key: str) -> MarketOutcomeOdds | None:
+        return next((outcome for outcome in self.outcomes if outcome.key == key), None)
+
+
+@dataclass(frozen=True)
 class Match:
     id: str
     business_date: str
@@ -76,10 +105,14 @@ class Match:
     kickoff_at: str
     sale_close_at: str | None = None
     sporttery_odds: ThreeWayOdds | None = None
+    sporttery_markets: tuple[BettingMarketOdds, ...] = ()
     handicap: float | None = None
     intel_tier: str = "B"
     stage: str = "league"
     source_url: str | None = None
+
+    def market(self, code: str) -> BettingMarketOdds | None:
+        return next((market for market in self.sporttery_markets if market.code == code), None)
 
 
 @dataclass(frozen=True)

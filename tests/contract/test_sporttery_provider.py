@@ -17,6 +17,9 @@ class SportteryProviderTests(unittest.TestCase):
         self.assertEqual(len(matches), 1)
         self.assertEqual(matches[0].match_no, "周一001")
         self.assertAlmostEqual(matches[0].sporttery_odds.home, 1.92)
+        self.assertEqual(len(matches[0].sporttery_markets), 5)
+        self.assertEqual(matches[0].market("hafu").get("HH").label, "胜/胜")
+        self.assertEqual(matches[0].market("ttg").get("7+").odds, 26.0)
 
     def test_parse_api_contract(self):
         payload = json.loads((FIXTURES / "sporttery_api.json").read_text(encoding="utf-8"))
@@ -24,6 +27,8 @@ class SportteryProviderTests(unittest.TestCase):
         self.assertEqual(len(matches), 1)
         self.assertEqual(matches[0].home, "海港城")
         self.assertEqual(matches[0].handicap, -1)
+        self.assertEqual(len(matches[0].sporttery_markets), 5)
+        self.assertEqual(matches[0].market("crs").get("1:0").odds, 7.8)
 
     def test_network_failure_falls_back_to_cache(self):
         with tempfile.TemporaryDirectory() as temp:

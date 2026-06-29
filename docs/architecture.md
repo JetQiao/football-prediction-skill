@@ -26,7 +26,7 @@ Elo/xG/伤病 ───────┼→ Provider → 统一领域模型 → Di
 
 ## SportteryAPI
 
-SportteryAPI 未以可直接导入的公共 npm 库发布，因此本项目通过其 REST/MCP 输出契约集成，不复制第三方实现。未配置服务时，本地 Provider 直连同一官方上游并只承担必要的响应归一化。
+SportteryAPI 未以可直接导入的公共 npm 库发布，因此本项目通过其 REST/MCP 输出契约集成，并复用其公开的五类玩法编码约定。未配置服务时，本地 Provider 直连同一官方上游并只承担必要的响应归一化。
 
 ## 可追溯性
 
