@@ -14,7 +14,10 @@
       "away": {"abbName": "北境联"},
       "markets": {
         "had": {"updateTime": "2026-06-29 12:00:00", "outcomes": [{"key": "home", "odds": 1.92}, {"key": "draw", "odds": 3.35}, {"key": "away", "odds": 3.62}]},
-        "hhad": {"goalLine": -1, "outcomes": [{"key": "home", "odds": 3.40}, {"key": "draw", "odds": 3.55}, {"key": "away", "odds": 1.82}]}
+        "hhad": {"poolNameZh": "让球胜平负", "goalLine": -1, "outcomes": [{"key": "home", "labelZh": "主胜", "odds": 3.40}, {"key": "draw", "labelZh": "平", "odds": 3.55}, {"key": "away", "labelZh": "客胜", "odds": 1.82}]},
+        "crs": {"poolNameZh": "比分", "outcomes": [{"code": "s01s00", "key": "1:0", "labelZh": "1:0", "odds": 7.80}, {"code": "s01s01", "key": "1:1", "labelZh": "1:1", "odds": 6.60}]},
+        "ttg": {"poolNameZh": "总进球", "outcomes": [{"code": "s2", "key": "2", "labelZh": "2球", "odds": 3.60}, {"code": "s7", "key": "7+", "labelZh": "7球+", "odds": 26.00}]},
+        "hafu": {"poolNameZh": "半全场", "outcomes": [{"code": "hh", "key": "HH", "labelZh": "胜/胜", "odds": 3.10}, {"code": "dd", "key": "DD", "labelZh": "平/平", "odds": 5.20}, {"code": "aa", "key": "AA", "labelZh": "负/负", "odds": 6.10}]}
       }
     }]
   }

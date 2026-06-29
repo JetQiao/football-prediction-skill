@@ -10,6 +10,8 @@
 - Dixon-Coles 低比分修正、时间衰减拟合、Elo/xG 特征与市场对数融合。
 - A/B 情报分层；每条 A 级情报必须包含来源、发布时间、可信度和有界影响。
 - 价值判断、推荐比分、置信度、信息缺口与逐场解释。
+- 完整解析胜平负、让球胜平负、比分、总进球、半全场五类官方竞彩 SP。
+- 世界杯数据台风格的自包含报告：首屏结论、直观概率条、玩法页签、术语解释和移动端适配。
 - 防未来数据泄漏的滚动回测：命中率、Brier、log-loss、ROI、最大回撤和可靠性曲线。
 - 小组赛蒙特卡洛排名、可配置淘汰赛对阵与“避强路径”启发式。
 - 自包含 HTML：内联数据、CSS、JavaScript、SVG，离线打开不发网络请求。
@@ -26,7 +28,7 @@ npx github:JetQiao/football-prediction-skill install
 
 ```bash
 FOOTBALL_PIP_INDEX_URL=https://pypi.tuna.tsinghua.edu.cn/simple \
-  npx -y github:JetQiao/football-prediction-skill#v0.1.2 install
+  npx -y github:JetQiao/football-prediction-skill#v0.2.0 install
 ```
 
 安装完成后直接使用：

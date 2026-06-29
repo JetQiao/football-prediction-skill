@@ -1,6 +1,6 @@
 {
   "name": "football-prediction-skill",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "description": "竞彩足球概率预测、价值分析、回测与自包含 HTML 报告 Skill",
   "type": "module",
   "bin": {
@@ -15,6 +15,7 @@
     "src/football_prediction/reporting/templates/*.html",
     "pyproject.toml",
     "README.md",
+    "CHANGELOG.md",
     "LICENSE",
     "NOTICE"
   ],

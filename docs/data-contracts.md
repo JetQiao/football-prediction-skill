@@ -2,7 +2,8 @@
 
 稳定的 JSON 输入协议与 Skill 内说明保持一致：
 
-- 比赛：`id/business_date/match_no/league/home/away/kickoff_at/sporttery_odds`。
+- 比赛：`id/business_date/match_no/league/home/away/kickoff_at/sporttery_odds/sporttery_markets[]`。
+- 竞彩玩法：`code/label/line/updated_at/outcomes[]`；选项含 `code/key/label/odds/trend`，覆盖 `had/hhad/crs/ttg/hafu`。
 - 特征：`team/elo/xg_for/xg_against/form_index/sample_size/source`。
 - 市场：`home/away/home_odds/draw_odds/away_odds/source/updated_at`。
 - 情报：`match_id/completeness/missing/evidences[]`；每条证据含 URL、发布时间、可信度、影响和对应赛果。

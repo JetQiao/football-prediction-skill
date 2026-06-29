@@ -20,8 +20,13 @@ class PipelineTests(unittest.TestCase):
             self.assertTrue(json_path.exists())
             html = html_path.read_text(encoding="utf-8")
             self.assertIn("竞彩足球", html)
+            self.assertIn("半全场", html)
+            self.assertIn("官方玩法 5/5", html)
+            self.assertIn('data-tab="markets"', html)
+            self.assertIn("一眼看懂", html)
             self.assertIn('type="application/json"', html)
             self.assertNotIn("https://cdn", html)
+            self.assertNotIn("nth-of-type(n+2)", html)
             self.assertTrue(list((root / "out").glob("manifest_*.json")))
 
 

@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import Iterable
 
 from .config import Settings
-from .domain import DailyReport, Match, TeamFeatures, ThreeWayOdds
+from .domain import BettingMarketOdds, DailyReport, MarketOutcomeOdds, Match, TeamFeatures, ThreeWayOdds
 from .intelligence import load_intel
 from .modeling import PredictionEngine
 from .providers.features import LocalFeatureProvider
@@ -144,6 +144,25 @@ def load_matches(path: Path, business_date: date) -> list[Match]:
                 raw_odds.get("source", "input-json"),
                 raw_odds.get("updated_at", ""),
             )
+        markets = tuple(
+            BettingMarketOdds(
+                code=market["code"],
+                label=market.get("label", market["code"]),
+                outcomes=tuple(
+                    MarketOutcomeOdds(
+                        code=outcome.get("code", outcome["key"]),
+                        key=outcome["key"],
+                        label=outcome.get("label", outcome["key"]),
+                        odds=float(outcome["odds"]),
+                        trend=outcome.get("trend", "unknown"),
+                    )
+                    for outcome in market.get("outcomes", [])
+                ),
+                updated_at=market.get("updated_at", ""),
+                line=market.get("line"),
+            )
+            for market in row.get("sporttery_markets", [])
+        )
         result.append(
             Match(
                 id=str(row["id"]),
@@ -155,6 +174,7 @@ def load_matches(path: Path, business_date: date) -> list[Match]:
                 kickoff_at=row["kickoff_at"],
                 sale_close_at=row.get("sale_close_at"),
                 sporttery_odds=odds,
+                sporttery_markets=markets,
                 handicap=row.get("handicap"),
                 intel_tier=row.get("intel_tier", "B"),
                 stage=row.get("stage", "league"),
