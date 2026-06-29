@@ -1,0 +1,21 @@
+{
+  "success": true,
+  "data": {
+    "updatedAt": "2026-06-29T12:00:00+08:00",
+    "matches": [{
+      "matchId": 1001,
+      "matchNumStr": "周一001",
+      "matchNumDate": "260629",
+      "businessDate": "2026-06-29",
+      "matchDate": "2026-06-29",
+      "matchTime": "20:00:00",
+      "league": {"abbName": "英超"},
+      "home": {"abbName": "海港城"},
+      "away": {"abbName": "北境联"},
+      "markets": {
+        "had": {"updateTime": "2026-06-29 12:00:00", "outcomes": [{"key": "home", "odds": 1.92}, {"key": "draw", "odds": 3.35}, {"key": "away", "odds": 3.62}]},
+        "hhad": {"goalLine": -1, "outcomes": [{"key": "home", "odds": 3.40}, {"key": "draw", "odds": 3.55}, {"key": "away", "odds": 1.82}]}
+      }
+    }]
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "teams": [
+    {"team": "海港城", "elo": 1810, "xg_for": 1.82, "xg_against": 0.98, "form_index": 0.35, "sample_size": 12, "source": "demo"},
+    {"team": "北境联", "elo": 1705, "xg_for": 1.28, "xg_against": 1.41, "form_index": -0.1, "sample_size": 12, "source": "demo"}
+  ]
+}

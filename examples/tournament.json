@@ -1,0 +1,9 @@
+{
+  "seed": 42,
+  "fixtures": [
+    {"group": "A", "home": "蓝队", "away": "金队", "home_prob": 0.46, "draw_prob": 0.29, "away_prob": 0.25},
+    {"group": "A", "home": "白队", "away": "红队", "home_prob": 0.31, "draw_prob": 0.31, "away_prob": 0.38},
+    {"group": "A", "home": "蓝队", "away": "白队", "home_prob": 0.55, "draw_prob": 0.27, "away_prob": 0.18},
+    {"group": "A", "home": "金队", "away": "红队", "home_prob": 0.42, "draw_prob": 0.3, "away_prob": 0.28}
+  ]
+}

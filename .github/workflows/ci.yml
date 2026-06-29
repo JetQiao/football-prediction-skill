@@ -1,0 +1,29 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+      - run: pip install -e .
+      - run: python -m unittest discover -s tests -p 'test_*.py'
+      - run: football-predict daily --demo --no-open --out ./reports/ci
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - run: node scripts/validate-report.mjs ./reports/ci/report_$(date +%F).html
+      - uses: actions/upload-artifact@v4
+        with:
+          name: demo-report-py${{ matrix.python-version }}
+          path: reports/ci/

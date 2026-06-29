@@ -1,0 +1,56 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "football-prediction-skill"
+version = "0.1.0"
+description = "可解释的竞彩足球概率预测、价值分析、回测与自包含 HTML 报告引擎"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "JetQiao" }]
+keywords = ["agent-skill", "football", "sporttery", "dixon-coles", "backtest"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+]
+dependencies = [
+  "Jinja2>=3.1,<4",
+  "numpy>=1.26,<3",
+  "platformdirs>=4.2,<5",
+  "scipy>=1.12,<2",
+]
+
+[project.optional-dependencies]
+test = ["coverage>=7.5"]
+xg = ["soccerdata>=1.8"]
+dev = ["coverage>=7.5", "ruff>=0.6"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I", "B"]
+
+[project.scripts]
+football-predict = "football_prediction.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/JetQiao/football-prediction-skill"
+Issues = "https://github.com/JetQiao/football-prediction-skill/issues"
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+football_prediction = ["reporting/templates/*.html"]

@@ -1,0 +1,40 @@
+{
+  "name": "football-prediction-skill",
+  "version": "0.1.0",
+  "description": "竞彩足球概率预测、价值分析、回测与自包含 HTML 报告 Skill",
+  "type": "module",
+  "bin": {
+    "football-prediction-skill": "./bin/skill-cli.mjs",
+    "football-predict-skill": "./bin/skill-cli.mjs",
+    "football-predict": "./bin/skill-cli.mjs"
+  },
+  "files": [
+    "bin",
+    "skill",
+    "src/football_prediction/**/*.py",
+    "src/football_prediction/reporting/templates/*.html",
+    "pyproject.toml",
+    "README.md",
+    "LICENSE",
+    "NOTICE"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "agent-skill",
+    "football",
+    "sporttery",
+    "dixon-coles",
+    "backtest"
+  ],
+  "author": "JetQiao",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JetQiao/football-prediction-skill.git"
+  },
+  "bugs": {
+    "url": "https://github.com/JetQiao/football-prediction-skill/issues"
+  }
+}

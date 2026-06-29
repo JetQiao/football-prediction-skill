@@ -1,0 +1,12 @@
+.github/
+docs/
+examples/
+tests/
+需求文档.md
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+**/*.egg-info/
+src/**/*.pyc
+src/**/__pycache__/**
+src/*.egg-info/**

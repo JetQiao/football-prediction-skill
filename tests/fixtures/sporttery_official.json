@@ -1,0 +1,22 @@
+{
+  "value": {
+    "lastUpdateTime": "2026-06-29 12:00:00",
+    "matchInfoList": [{
+      "matchNumDate": "260629",
+      "businessDate": "2026-06-29",
+      "weekday": "周一",
+      "subMatchList": [{
+        "matchId": 1001,
+        "matchNumStr": "周一001",
+        "businessDate": "2026-06-29",
+        "matchDate": "2026-06-29",
+        "matchTime": "20:00:00",
+        "leagueAbbName": "英超",
+        "homeTeamAbbName": "海港城",
+        "awayTeamAbbName": "北境联",
+        "had": {"h": "1.92", "d": "3.35", "a": "3.62", "updateTime": "2026-06-29 12:00:00"},
+        "hhad": {"goalLineValue": "-1", "h": "3.40", "d": "3.55", "a": "1.82"}
+      }]
+    }]
+  }
+}
