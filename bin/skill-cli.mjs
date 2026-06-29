@@ -1,7 +1,18 @@
 #!/usr/bin/env node
 
 import { spawnSync } from "node:child_process";
-import { cpSync, existsSync, mkdirSync, rmSync } from "node:fs";
+import {
+  chmodSync,
+  cpSync,
+  existsSync,
+  lstatSync,
+  mkdirSync,
+  readFileSync,
+  readlinkSync,
+  rmSync,
+  symlinkSync,
+  writeFileSync,
+} from "node:fs";
 import { homedir } from "node:os";
 import { delimiter, dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -108,6 +119,79 @@ function runtimeEnvironment() {
   return { ...process.env, PYTHONPATH: current ? `${runtime}${delimiter}${current}` : runtime };
 }
 
+function npmExecutable() {
+  return process.platform === "win32" ? "npm.cmd" : "npm";
+}
+
+function globalCommandPath() {
+  const result = spawnSync(npmExecutable(), ["prefix", "--global"], { encoding: "utf8" });
+  if (result.status !== 0) return null;
+  const prefix = result.stdout.trim();
+  return process.platform === "win32" ? join(prefix, "football-predict.cmd") : join(prefix, "bin", "football-predict");
+}
+
+function stablePackagePath() {
+  return join(state, "package");
+}
+
+function ownsGlobalCommand(commandPath) {
+  if (!commandPath || !existsSync(commandPath)) return false;
+  const stat = lstatSync(commandPath);
+  if (stat.isSymbolicLink()) {
+    return readlinkSync(commandPath).includes("football-prediction-skill");
+  }
+  try {
+    return readFileSync(commandPath, "utf8").includes("football-prediction-skill launcher");
+  } catch {
+    return false;
+  }
+}
+
+function copyStablePackage() {
+  const target = stablePackagePath();
+  if (resolve(root) === resolve(target)) return target;
+  rmSync(target, { recursive: true, force: true });
+  mkdirSync(target, { recursive: true });
+  for (const name of ["bin", "skill", "src"]) cpSync(join(root, name), join(target, name), { recursive: true });
+  cpSync(join(root, "package.json"), join(target, "package.json"));
+  chmodSync(join(target, "bin", "skill-cli.mjs"), 0o755);
+  return target;
+}
+
+function installGlobalCommand() {
+  if (process.env.FOOTBALL_SKIP_GLOBAL_INSTALL === "1") return { installed: false, skipped: true, path: null };
+  const commandPath = globalCommandPath();
+  if (!commandPath) return { installed: false, skipped: false, path: null };
+  try {
+    const stablePackage = copyStablePackage();
+    const stableCli = join(stablePackage, "bin", "skill-cli.mjs");
+    mkdirSync(dirname(commandPath), { recursive: true });
+    if (existsSync(commandPath)) {
+      if (!ownsGlobalCommand(commandPath)) throw new Error(`目标命令已存在且不属于本项目：${commandPath}`);
+      rmSync(commandPath, { force: true });
+    }
+    if (process.platform === "win32") {
+      writeFileSync(
+        commandPath,
+        `@echo off\r\nREM football-prediction-skill launcher\r\nnode "${stableCli}" %*\r\n`,
+        "utf8",
+      );
+    } else {
+      symlinkSync(stableCli, commandPath);
+    }
+    return { installed: true, skipped: false, path: commandPath };
+  } catch (error) {
+    console.warn(`[WARN] 无法自动注册全局命令，Skill 本身已安装。\n${error.message}`);
+    return { installed: false, skipped: false, path: null };
+  }
+}
+
+function uninstallGlobalCommand() {
+  if (process.env.FOOTBALL_SKIP_GLOBAL_INSTALL === "1") return;
+  const commandPath = globalCommandPath();
+  if (ownsGlobalCommand(commandPath)) rmSync(commandPath, { force: true });
+}
+
 function skillTargets() {
   const codexHome = process.env.CODEX_HOME || join(home, ".codex");
   return [join(codexHome, "skills", "football-prediction-skill"), join(home, ".claude", "skills", "football-prediction-skill")];
@@ -127,11 +211,17 @@ try {
   if (command === "install") {
     installRuntime();
     installSkill();
+    const globalCommand = installGlobalCommand();
     console.log("✓ 安装完成。可在 Codex / Claude Code 中说：分析今天的竞彩足球并生成报告");
-    console.log("  命令行运行：npx -y github:JetQiao/football-prediction-skill daily --date today");
-    console.log("  若需全局 football-predict 命令：npm install -g github:JetQiao/football-prediction-skill");
+    if (globalCommand.installed) {
+      console.log(`✓ 已注册全局命令：${globalCommand.path || "football-predict"}`);
+      console.log("  命令行运行：football-predict daily --date today");
+    } else if (!globalCommand.skipped) {
+      console.log("  可继续使用：npx -y github:JetQiao/football-prediction-skill daily --date today");
+    }
   } else if (command === "uninstall") {
     for (const target of skillTargets()) rmSync(target, { recursive: true, force: true });
+    uninstallGlobalCommand();
     rmSync(state, { recursive: true, force: true });
     console.log("✓ 已卸载 Skill 与本地运行环境（历史报告未存放在 Skill 目录中）");
   } else {

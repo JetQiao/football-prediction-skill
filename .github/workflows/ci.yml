@@ -24,7 +24,9 @@ jobs:
           node-version: "20"
       - run: node scripts/validate-report.mjs ./reports/ci/report_$(date +%F).html
       - run: python -m venv --system-site-packages "$RUNNER_TEMP/football-predict-installer"
-      - run: FOOTBALL_PREDICT_HOME="$RUNNER_TEMP/football-predict-installer" node bin/skill-cli.mjs demo --no-open --out ./reports/installer
+      - run: FOOTBALL_PREDICT_HOME="$RUNNER_TEMP/football-predict-installer" node bin/skill-cli.mjs install
+      - run: FOOTBALL_PREDICT_HOME="$RUNNER_TEMP/football-predict-installer" football-predict --version
+      - run: FOOTBALL_PREDICT_HOME="$RUNNER_TEMP/football-predict-installer" football-predict daily --demo --no-open --out ./reports/installer
       - uses: actions/upload-artifact@v4
         with:
           name: demo-report-py${{ matrix.python-version }}

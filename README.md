@@ -22,19 +22,21 @@
 npx github:JetQiao/football-prediction-skill install
 ```
 
-安装器不会通过 pip 构建本项目本身，避免额外下载 `setuptools/wheel`；Python 运行依赖会在 PyPI、清华和阿里云镜像间自动降级。网络受限时可显式指定镜像：
+安装器会同时安装 Skill、私有 Python 运行环境和全局 `football-predict` 命令。它不会通过 pip 构建本项目本身，避免额外下载 `setuptools/wheel`；Python 运行依赖会在 PyPI、清华和阿里云镜像间自动降级。网络受限时可显式指定镜像：
 
 ```bash
 FOOTBALL_PIP_INDEX_URL=https://pypi.tuna.tsinghua.edu.cn/simple \
-  npx -y github:JetQiao/football-prediction-skill#v0.1.1 install
+  npx -y github:JetQiao/football-prediction-skill#v0.1.2 install
 ```
 
-如需长期使用全局命令：
+安装完成后直接使用：
 
 ```bash
-npm install -g github:JetQiao/football-prediction-skill
 football-predict doctor
+football-predict daily --date today
 ```
+
+如果安装完成后当前 zsh 仍保留旧的“command not found”缓存，执行一次 `rehash` 即可。
 
 也可以只安装 Python CLI：
 
