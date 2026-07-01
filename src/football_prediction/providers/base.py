@@ -11,6 +11,8 @@ import urllib.request
 from pathlib import Path
 from typing import Any, Mapping
 
+from .. import __version__
+
 
 class ProviderError(RuntimeError):
     """数据源不可用或响应契约已变化。"""
@@ -18,7 +20,7 @@ class ProviderError(RuntimeError):
 
 USER_AGENT = (
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
-    "AppleWebKit/537.36 Chrome/124 Safari/537.36 football-prediction-skill/0.1"
+    f"AppleWebKit/537.36 Chrome/124 Safari/537.36 football-prediction-skill/{__version__}"
 )
 
 
@@ -29,6 +31,7 @@ def fetch_json(
     headers: Mapping[str, str] | None = None,
     cache_dir: Path | None = None,
     cache_ttl: int = 30,
+    no_proxy: bool = False,
 ) -> Any:
     cache_path: Path | None = None
     if cache_dir:
@@ -41,8 +44,11 @@ def fetch_json(
     merged_headers = {"User-Agent": USER_AGENT, "Accept": "application/json"}
     merged_headers.update(headers or {})
     request = urllib.request.Request(url, headers=merged_headers)
+    # no_proxy 时绕过系统/环境代理直连上游：境内域名经境外代理出口常被 WAF 拦截。
+    opener = urllib.request.build_opener(urllib.request.ProxyHandler({})) if no_proxy else None
     try:
-        with urllib.request.urlopen(request, timeout=timeout) as response:
+        manager = opener.open(request, timeout=timeout) if opener else urllib.request.urlopen(request, timeout=timeout)
+        with manager as response:
             payload = json.loads(response.read().decode("utf-8"))
     except (urllib.error.URLError, TimeoutError, json.JSONDecodeError) as exc:
         raise ProviderError(f"请求数据源失败：{url} ({exc})") from exc

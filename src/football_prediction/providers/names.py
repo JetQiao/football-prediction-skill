@@ -8,7 +8,8 @@ from dataclasses import dataclass, field
 
 
 def name_key(value: str) -> str:
-    normalized = unicodedata.normalize("NFKD", value).encode("ascii", "ignore").decode("ascii")
+    decomposed = unicodedata.normalize("NFKD", value)
+    normalized = "".join(ch for ch in decomposed if not unicodedata.combining(ch))
     normalized = re.sub(r"\b(fc|afc|cf|sc|club|football)\b", "", normalized, flags=re.IGNORECASE)
     return re.sub(r"[^a-z0-9\u4e00-\u9fff]", "", normalized.lower())
 

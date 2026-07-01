@@ -6,6 +6,14 @@ The report interface draws visual-system inspiration from WORLD CUP AI HUB
 contributors (MIT License):
 https://github.com/netz888/WORLD-CUP-AI-HUB
 
+The report interface embeds selected football icon paths from Material Design
+Icons / @mdi/js (Apache License 2.0):
+https://github.com/Templarian/MaterialDesign-JS
+
+Bundled country flag images are sourced from flagcdn.com and the flag-icons
+project by Lipis (MIT License):
+https://github.com/lipis/flag-icons
+
 Runtime data can be obtained from third-party services. Their data, trademarks,
 terms of use, rate limits and licenses are not covered by this repository's MIT
 License. Users are responsible for complying with each source's terms.

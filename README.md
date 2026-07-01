@@ -44,7 +44,7 @@ npx github:JetQiao/football-prediction-skill install
 
 ```bash
 FOOTBALL_PIP_INDEX_URL=https://pypi.tuna.tsinghua.edu.cn/simple \
-  npx -y github:JetQiao/football-prediction-skill#v0.2.0 install
+  npx -y github:JetQiao/football-prediction-skill#v0.3.0 install
 ```
 
 安装完成后直接使用：

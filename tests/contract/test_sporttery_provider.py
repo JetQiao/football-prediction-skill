@@ -45,6 +45,21 @@ class SportteryProviderTests(unittest.TestCase):
             self.assertEqual(provider.active_source, "stale-cache")
             self.assertTrue(provider.warnings)
 
+    def test_official_source_retries_without_proxy(self):
+        payload = json.loads((FIXTURES / "sporttery_official.json").read_text(encoding="utf-8"))
+        provider = SportteryProvider()
+        with patch(
+            "football_prediction.providers.sporttery.fetch_json",
+            side_effect=[ProviderError("HTTP 567"), payload],
+        ) as fetch:
+            from datetime import date
+
+            matches = provider.fetch_matches(date(2026, 6, 29))
+
+        self.assertEqual(len(matches), 1)
+        self.assertEqual([call.kwargs["no_proxy"] for call in fetch.call_args_list], [False, True])
+        self.assertIn("已绕过代理直连", " ".join(provider.warnings))
+
 
 if __name__ == "__main__":
     unittest.main()

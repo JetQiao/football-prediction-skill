@@ -160,7 +160,9 @@ def predict_from_features(home: TeamFeatures, away: TeamFeatures, max_goals: int
     home_xg = (home_attack + away_defence) / 2 * 1.10
     away_xg = (away_attack + home_defence) / 2
     if home.elo is not None and away.elo is not None:
-        elo_factor = math.exp(max(-400, min(400, home.elo - away.elo)) / 900)
+        # 标准 Elo 刻度是 /400；旧的 /900 + sqrt 会把实力差压缩到约四分之一，
+        # 导致强队被严重低估（386 分差旧版只给 54% 胜率，市场/标准 Elo 均为约 76-90%）。
+        elo_factor = math.exp(max(-600, min(600, home.elo - away.elo)) / 400)
         home_xg *= math.sqrt(elo_factor)
         away_xg /= math.sqrt(elo_factor)
     form_delta = max(-1, min(1, home.form_index - away.form_index))
