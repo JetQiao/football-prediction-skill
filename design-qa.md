@@ -1,43 +1,55 @@
 # Design QA
 
-- source visual truth: `/tmp/world-cup-ai-hub-screens/index.png`、`/tmp/world-cup-ai-hub-screens/pre-match-prediction.png`
-- implementation screenshots: `/tmp/football-ui-desktop.png`、`/tmp/football-ui-mobile.png`、`/tmp/football-ui-markets.png`
-- comparison evidence: `/tmp/football-ui-comparison.png`、`/tmp/football-ui-detail-comparison.png`
-- viewport: desktop `1440 × 1024`；mobile `390 × 844`
-- state: 深色主题；第一场展开；五类玩法页签选中
+- 发布候选：`0.3.0`。
+- 视觉方向：现代足球比赛日 App 暗色模式，近黑背景、品牌蓝主操作、绿色状态、黄色降级提示。
+- 真实报告：`/private/tmp/football-real-v030-2026-07-01/report_2026-07-01.html`。
+- 桌面截图：`/tmp/football-v030-desktop-review.png`（`1280 × 900`）。
+- 手机截图：`/tmp/football-v030-mobile-top-review.png`（`375 × 812`）。
 
-**Findings**
+## Visual Findings
 
-- 无可执行的 P0/P1/P2 问题。实现与参考保持一致的深色赛事控制台语言、荧光绿主色、球场网格、紧凑导航、高密度数据卡片和分段概率条，同时保留了竞彩足球特有的信息架构。
-- 字体与层级：系统无衬线字体在中文和数字上清晰，标题、正文、辅助信息和概率数字层级明确；桌面与手机均未发生裁切或不可读换行。
-- 间距与布局：桌面首屏、焦点卡、赛单和详情使用稳定的 14–20px 节奏；移动端改为单列，概率列未被隐藏。
-- 颜色与状态：主色、警告色、客胜色和低对比辅助文字语义一致；正文与背景对比度可读。
-- 图像与资产：该报告不依赖球队图片或外部网络资产；背景纹理与数据图表均由报告自身渲染，离线打开保持完整。
-- 文案与内容：EV、Edge 已替换为“长期期望”“概率优势”，并明确区分“官方 SP”与“模型推演”。
+- Hero、赛程卡和 Match Center 共享统一的色板、描边、圆角、字号与信息密度，没有脱离足球比赛日语境。
+- 国家队使用随包分发的真实国旗；俱乐部或未知球队继续使用稳定的字母徽标，不依赖网络资源。
+- 主胜、平局、客胜、价值与风险状态保持固定颜色语义，关键数字在暗色背景上对比清晰。
+- 官方数据、模型推演、缺失输入和降级状态在视觉上可区分，没有把模型结论伪装成官方数据。
+- 未发现可执行的 P0 / P1 / P2 视觉问题。
 
-**Focused region comparison**
+## Data Truth QA
 
-- 首屏对照确认导航、滚动赛程、球场纹理、主标题、核心数字与右侧焦点面板的层级和密度与参考一致。
-- 详情对照确认赛果概率、让球概率、比分、总进球和半全场信息均使用一致的卡片与状态语言；玩法页签可交互。
+- 真实报告包含 `3` 场官方赛单、`3/3` 官方 SP 覆盖和 `6` 条可核验赛前证据。
+- 概率拆分为统计模型、官方 SP 去水、外部市场和最终模型四层，并显示来源与更新时间。
+- 国家队 Elo / xG 或同一时点外部市场缺失时明确标记中性先验与降级状态。
+- 关键输入不足时强制低置信，并暂停输出价值信号；本次报告高置信 `0`、价值信号 `0`。
 
-**Patches made since previous QA pass**
+## Interaction QA
 
-- 删除原页面的大面积空白首屏，改为紧凑的今日概览和核心场次。
-- 修复移动端隐藏平局、客胜概率的规则。
-- 新增四个详情页签与五类竞彩玩法。
-- 增加官方玩法覆盖状态和无 SP 时的明确降级文案。
-- 将专业缩写改为中文解释，并增加顶部“怎么看”区块。
+- 首场默认展开，赛单筛选、展开全部、打印入口和详情页签均保留。
+- 「赔率价值」页签切换后 `aria-selected="true"`，且只有一个对应内容面板可见。
+- 页签继续支持方向键、Home 和 End 键操作。
+- 桌面与移动端浏览器控制台警告 / 错误均为 `0`。
 
-**Implementation Checklist**
+## Responsive QA
 
-- [x] 桌面 1440 × 1024 视觉检查
-- [x] 手机 390 × 844 视觉检查
-- [x] 筛选、展开全部、玩法页签与打印按钮检查
-- [x] 自包含 HTML 与离线资源检查
-- [x] 参考图与实现图同屏对照
+- 桌面 `1280 × 900`：`scrollWidth === clientWidth === 1280`，无页面级横向溢出。
+- 手机 `375 × 812`：`scrollWidth === clientWidth === 375`，无页面级横向溢出。
+- 手机导航宽 `357px`、内容宽 `403px`；数据来源带宽 `355px`、内容宽 `747px`，均只在自身容器内滚动。
+- 手机首屏国旗、主客队、VS、开赛时间与数据状态完整显示。
 
-**Follow-up Polish**
+## Packaging QA
 
-- P3：未来如接入可合法再分发的球队徽标，可在比赛卡中增加真实队徽；当前纯文本队名是有意的离线与版权约束。
+- npm 包版本 `0.3.0`，共 `169` 个条目，包含全部 `119` 面国旗。
+- Wheel 安装后版本为 `0.3.0`，国旗资源、Demo 报告和离线校验均通过。
+- 从实际 npm tarball 冷启动安装成功，Codex / Claude Skill 与运行快照均完整。
+
+## Automated Checks
+
+- [x] 32 项 Python 单元 / 契约测试
+- [x] Ruff 全仓检查
+- [x] Python 字节码编译
+- [x] Wheel 构建与隔离导入
+- [x] npm tarball 安装验证
+- [x] 内联 JSON / JavaScript / 离线资源校验
+- [x] `git diff --check`
+- [x] 桌面 / 移动端浏览器验收
 
 final result: passed

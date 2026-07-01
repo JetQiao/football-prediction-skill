@@ -58,28 +58,54 @@ class PredictionEngine:
             if self.model and match.home in self.model.teams and match.away in self.model.teams
             else predict_from_features(home_features, away_features)
         )
-        market_probs = remove_vig(market_odds) if market_odds else None
-        fused = (
-            logarithmic_pool(dc.probabilities, market_probs, self.settings.market_weight)
-            if market_probs
-            else dc.probabilities
+        feature_ready = all(
+            feature.source != "fallback"
+            and any(value is not None for value in (feature.elo, feature.xg_for, feature.xg_against))
+            for feature in (home_features, away_features)
         )
+        market_probs = remove_vig(market_odds) if market_odds else None
+        official_probs = remove_vig(match.sporttery_odds) if match.sporttery_odds else None
+        # 官方竞彩 SP 是最具流动性、校准最好的市场信号：只要拿到就融入最终概率，
+        # 不再只当实力特征缺失时的兜底。特征就绪→按 market_weight 与统计层对数池化；
+        # 特征缺失→权重升到 1.0，退化为纯 SP 去水基线，避免退回中性先验。
+        official_only = market_probs is None and official_probs is not None
+        official_fallback = official_only and not feature_ready
+        if market_probs:
+            fused = logarithmic_pool(dc.probabilities, market_probs, self.settings.market_weight)
+        elif official_only and official_probs:
+            weight = 1.0 if not feature_ready else self.settings.market_weight
+            fused = logarithmic_pool(dc.probabilities, official_probs, weight)
+        else:
+            fused = dc.probabilities
+        market_layer = market_probs or official_probs
         if intel:
             validate_intel(intel, kickoff_at=match.kickoff_at)
         final = apply_intelligence(fused, intel, self.settings.max_intel_logit)
         if self.calibrator:
             final = self.calibrator.transform(final)
+        # 只有真实实力特征或同一时点外部市场至少存在一层时，才允许输出价值信号。
+        # 否则中性先验与官方 SP 的差异会制造看似精确、实际不可执行的高 EV。
+        value_eligible = bool(match.sporttery_odds and (feature_ready or market_probs))
         value = (
             assess_value(final, match.sporttery_odds, threshold=self.settings.value_threshold)
-            if match.sporttery_odds
+            if value_eligible and match.sporttery_odds
             else None
         )
         recommended = final.best()
-        confidence = self._confidence(final, dc.probabilities, market_probs, intel)
-        reasons = self._reasons(match, home_features, away_features, dc.probabilities, market_probs, intel)
+        confidence = self._confidence(final, dc.probabilities, market_layer, intel)
+        reasons = self._reasons(match, home_features, away_features, dc.probabilities, market_layer, intel)
+        if official_fallback:
+            confidence = "low"
+            reasons.insert(1, "实力特征缺失，概率基线切换为当期竞彩 SP 去水结果")
+        elif official_only:
+            reasons.insert(1, f"已按 {self.settings.market_weight:.0%} 市场权重把官方竞彩 SP 去水概率融入最终结果")
         warnings: list[str] = []
-        if not market_probs:
-            warnings.append("缺少实时锐角/市场基准，当前结果主要来自统计模型")
+        if official_fallback:
+            warnings.append("缺少实力特征与外部市场，当前概率主要来自官方 SP 去水基线")
+        elif not market_probs:
+            warnings.append("缺少实时锐角/市场基准，最终概率由统计模型与官方 SP 去水融合")
+        if match.sporttery_odds and not value_eligible:
+            warnings.append("实力特征与外部市场均不足，已暂停输出价值信号")
         if match.intel_tier == "A" and (not intel or intel.completeness < 0.6):
             warnings.append("A 级场情报尚不完整，置信度已下调")
         return MatchPrediction(
@@ -97,6 +123,9 @@ class PredictionEngine:
             reasons=tuple(reasons),
             warnings=tuple(warnings),
             intel=intel,
+            home_features=home_features,
+            away_features=away_features,
+            reference_market_odds=market_odds,
         )
 
     @staticmethod
@@ -104,7 +133,7 @@ class PredictionEngine:
         final: Probability3, model: Probability3, market: Probability3 | None, intel: MatchIntel | None
     ) -> str:
         agreement = (
-            1.0
+            0.5
             if market is None
             else 1 - sum(abs(a - b) for a, b in zip(model.vector(), market.vector(), strict=True)) / 2
         )

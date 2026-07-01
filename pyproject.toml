@@ -4,16 +4,15 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "football-prediction-skill"
-version = "0.2.0"
+version = "0.3.0"
 description = "可解释的竞彩足球概率预测、价值分析、回测与自包含 HTML 报告引擎"
 readme = "README.md"
 requires-python = ">=3.10"
-license = { text = "MIT" }
+license = "MIT"
 authors = [{ name = "JetQiao" }]
 keywords = ["agent-skill", "football", "sporttery", "dixon-coles", "backtest"]
 classifiers = [
   "Development Status :: 3 - Alpha",
-  "License :: OSI Approved :: MIT License",
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
@@ -53,4 +52,4 @@ package-dir = { "" = "src" }
 where = ["src"]
 
 [tool.setuptools.package-data]
-football_prediction = ["reporting/templates/*.html"]
+football_prediction = ["reporting/templates/*.html", "reporting/assets/flags/*.png"]

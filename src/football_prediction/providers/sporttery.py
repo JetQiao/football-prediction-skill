@@ -192,27 +192,37 @@ class SportteryProvider:
             except ProviderError as exc:
                 self.warnings.append(f"SportteryAPI 不可用，尝试官方接口：{exc}")
 
-        try:
-            payload = fetch_json(
-                with_query(OFFICIAL_URL, {"poolCode": "had,hhad,crs,ttg,hafu", "channel": "c"}),
-                timeout=self.timeout,
-                headers={"Referer": "https://m.sporttery.cn/", "Accept-Language": "zh-CN,zh;q=0.9"},
-                cache_dir=self.cache_dir,
-            )
-            self.active_source = "sporttery-official"
-            return self.parse_official(payload, business_date.isoformat())
-        except ProviderError as exc:
-            cached = self._latest_cache()
-            if cached is not None:
-                self.active_source = "stale-cache"
-                self.warnings.append(f"实时竞彩源不可用，使用最近缓存：{exc}")
-                if "value" in cached:
-                    return self.parse_official(cached, business_date.isoformat())
-                return self.parse_sporttery_api(cached, business_date.isoformat())
-            message = str(exc)
-            if "567" in message:
-                message += "；上游存在地域限制，请本地运行 SportteryAPI 并设置 SPORTTERY_API_URL，或配置可达代理"
-            raise ProviderError(message) from exc
+        official_url = with_query(OFFICIAL_URL, {"poolCode": "had,hhad,crs,ttg,hafu", "channel": "c"})
+        official_headers = {"Referer": "https://m.sporttery.cn/", "Accept-Language": "zh-CN,zh;q=0.9"}
+        last_error: ProviderError | None = None
+        # 先按系统代理直发；若被拦截（境外代理出口常触发 WAF 567），再绕过代理直连官方接口。
+        for no_proxy in (False, True):
+            try:
+                payload = fetch_json(
+                    official_url,
+                    timeout=self.timeout,
+                    headers=official_headers,
+                    cache_dir=self.cache_dir,
+                    no_proxy=no_proxy,
+                )
+                self.active_source = "sporttery-official"
+                if no_proxy:
+                    self.warnings.append("代理出口被竞彩源拦截，已绕过代理直连官方接口获取实时数据")
+                return self.parse_official(payload, business_date.isoformat())
+            except ProviderError as exc:
+                last_error = exc
+
+        cached = self._latest_cache()
+        if cached is not None:
+            self.active_source = "stale-cache"
+            self.warnings.append(f"实时竞彩源不可用，使用最近缓存：{last_error}")
+            if "value" in cached:
+                return self.parse_official(cached, business_date.isoformat())
+            return self.parse_sporttery_api(cached, business_date.isoformat())
+        message = str(last_error)
+        if "567" in message:
+            message += "；代理直发与绕过代理直连均被拦截，请确认运行网络可直连中国大陆，或本地部署 SportteryAPI 并设置 SPORTTERY_API_URL"
+        raise ProviderError(message) from last_error
 
     def _latest_cache(self) -> dict[str, Any] | None:
         if not self.cache_dir or not self.cache_dir.exists():

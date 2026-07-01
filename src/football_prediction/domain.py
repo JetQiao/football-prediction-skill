@@ -194,6 +194,9 @@ class MatchPrediction:
     reasons: tuple[str, ...]
     warnings: tuple[str, ...] = ()
     intel: MatchIntel | None = None
+    home_features: TeamFeatures | None = None
+    away_features: TeamFeatures | None = None
+    reference_market_odds: ThreeWayOdds | None = None
 
 
 @dataclass(frozen=True)
