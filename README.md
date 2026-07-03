@@ -6,13 +6,14 @@
 
 ## 能力
 
-- 按日期覆盖竞彩足球胜平负场次，支持 SportteryAPI 与官方接口本地降级。
+- 按日期覆盖官方赛单全部场次；普通胜平负未开售、仅让球在售或玩法待开售均不会漏场。
 - Dixon-Coles 低比分修正、时间衰减拟合、Elo/xG 特征与市场对数融合。
 - A/B 情报分层；每条 A 级情报必须包含来源、发布时间、可信度和有界影响。
 - 价值判断、推荐比分、置信度、信息缺口与逐场解释。
-- 完整解析胜平负、让球胜平负、比分、总进球、半全场五类官方竞彩 SP。
+- 完整解析五类官方竞彩 SP，并联合校准为同一个比赛级比分矩阵，避免各玩法互相矛盾。
 - 世界杯数据台风格的自包含报告：首屏结论、直观概率条、玩法页签、术语解释和移动端适配。
 - 防未来数据泄漏的滚动回测：命中率、Brier、log-loss、ROI、最大回撤和可靠性曲线。
+- 每日预测赛后结算：按联赛、置信度和分析模式追踪真实表现，未完赛场次自动保留。
 - 小组赛蒙特卡洛排名、可配置淘汰赛对阵与“避强路径”启发式。
 - 自包含 HTML：内联数据、CSS、JavaScript、SVG，离线打开不发网络请求。
 
@@ -101,6 +102,16 @@ football-predict daily \
 - `prediction_YYYY-MM-DD.json`：机器可读预测快照。
 - `report_YYYY-MM-DD.html`：最终离线报告。
 - `manifest_<run_id>.json`：数据源、参数、警告和产物路径。
+
+赛后使用通用比分文件评估当日预测，无需为新日期修改代码：
+
+```bash
+football-predict evaluate-daily \
+  ./prediction_YYYY-MM-DD.json \
+  ./results_YYYY-MM-DD.json
+```
+
+赛果格式支持 `match_id + score`，也支持 `match_no + home_goals/away_goals`，详见 [`docs/data-contracts.md`](docs/data-contracts.md)。
 
 生成五大联赛 xG + ClubElo 特征快照（需安装可选依赖）：
 

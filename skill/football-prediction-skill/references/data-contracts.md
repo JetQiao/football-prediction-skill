@@ -13,8 +13,8 @@
     "league": "英超",
     "home": "Arsenal",
     "away": "Chelsea",
-    "kickoff_at": "2026-06-29T20:00:00+08:00",
-    "intel_tier": "A",
+  "kickoff_at": "2026-06-29T20:00:00+08:00",
+  "intel_tier": "A",
     "sporttery_odds": {
       "home": 1.92,
       "draw": 3.35,
@@ -25,6 +25,8 @@
   }]
 }
 ```
+
+`sporttery_odds` 只代表普通胜平负 HAD，允许为 `null`。只要官方赛单仍包含该比赛，HHAD-only 或玩法待开售场次都必须保留；不得因为 HAD 缺失而过滤整场。`prepare` 快照的 `meta.source_match_count` 必须与解析场次数一致。
 
 ## 球队特征
 
@@ -59,3 +61,16 @@
 ```
 
 球队名称匹配会忽略大小写、空格和常见 FC/Club 后缀。名称存在歧义时先人工确认，禁止按相似字符串自动猜测。
+
+## 赛后比分
+
+```json
+{
+  "results": [
+    {"match_id": "123", "score": "2:1"},
+    {"match_no": "周一002", "home_goals": 0, "away_goals": 0}
+  ]
+}
+```
+
+运行 `football-predict evaluate-daily prediction_YYYY-MM-DD.json results.json`，按比赛 ID 优先、场号兜底完成结算。

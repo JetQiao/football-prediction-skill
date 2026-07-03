@@ -30,6 +30,86 @@ class SportteryProviderTests(unittest.TestCase):
         self.assertEqual(len(matches[0].sporttery_markets), 5)
         self.assertEqual(matches[0].market("crs").get("1:0").odds, 7.8)
 
+    def test_keeps_matches_when_had_is_not_on_sale(self):
+        payload = {
+            "value": {
+                "lastUpdateTime": "2026-07-03 12:00:00",
+                "matchInfoList": [
+                    {
+                        "businessDate": "2026-07-03",
+                        "matchCount": 2,
+                        "subMatchList": [
+                            {
+                                "matchId": 1,
+                                "matchNumStr": "周五001",
+                                "businessDate": "2026-07-03",
+                                "matchDate": "2026-07-04",
+                                "matchTime": "02:00:00",
+                                "leagueAbbName": "测试联赛",
+                                "homeTeamAbbName": "甲队",
+                                "awayTeamAbbName": "乙队",
+                                "had": {"h": "1.90", "d": "3.20", "a": "3.80"},
+                            },
+                            {
+                                "matchId": 2,
+                                "matchNumStr": "周五002",
+                                "businessDate": "2026-07-03",
+                                "matchDate": "2026-07-04",
+                                "matchTime": "06:00:00",
+                                "leagueAbbName": "测试联赛",
+                                "homeTeamAbbName": "丙队",
+                                "awayTeamAbbName": "丁队",
+                                "had": {},
+                                "hhad": {
+                                    "goalLineValue": "-2",
+                                    "h": "2.22",
+                                    "d": "3.62",
+                                    "a": "2.48",
+                                },
+                            },
+                        ],
+                    }
+                ],
+            }
+        }
+
+        matches = SportteryProvider.parse_official(payload, "2026-07-03")
+
+        self.assertEqual(len(matches), 2)
+        self.assertIsNone(matches[1].sporttery_odds)
+        self.assertEqual(matches[1].market("hhad").line, -2)
+
+    def test_keeps_fixture_before_any_market_opens(self):
+        payload = {
+            "value": {
+                "matchInfoList": [
+                    {
+                        "businessDate": "2026-07-03",
+                        "matchCount": 1,
+                        "subMatchList": [
+                            {
+                                "matchId": 3,
+                                "matchNumStr": "周五003",
+                                "businessDate": "2026-07-03",
+                                "matchDate": "2026-07-04",
+                                "matchTime": "09:00:00",
+                                "leagueAbbName": "测试联赛",
+                                "homeTeamAbbName": "戊队",
+                                "awayTeamAbbName": "己队",
+                                "matchStatus": "NotSelling",
+                            }
+                        ],
+                    }
+                ]
+            }
+        }
+
+        matches = SportteryProvider.parse_official(payload, "2026-07-03")
+
+        self.assertEqual(len(matches), 1)
+        self.assertEqual(matches[0].sporttery_markets, ())
+        self.assertEqual(matches[0].match_status, "NotSelling")
+
     def test_network_failure_falls_back_to_cache(self):
         with tempfile.TemporaryDirectory() as temp:
             cache = Path(temp)

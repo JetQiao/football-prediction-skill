@@ -50,7 +50,7 @@ class DailyPipeline:
             sources[0] = provider.active_source
         match_list = self._assign_tiers(list(matches))
         if not match_list:
-            raise ValueError(f"{business_date.isoformat()} 没有可预测的竞彩胜平负场次")
+            raise ValueError(f"{business_date.isoformat()} 没有获取到竞彩赛程")
 
         feature_map = LocalFeatureProvider(features_file).load()
         market_map = LocalMarketProvider(market_file).load()
@@ -101,6 +101,7 @@ class DailyPipeline:
                 "warnings": warnings,
                 "parameters": {
                     "market_weight": self.settings.market_weight,
+                    "official_market_weight": self.settings.official_market_weight,
                     "value_threshold": self.settings.value_threshold,
                     "max_intel_logit": self.settings.max_intel_logit,
                 },
@@ -179,6 +180,12 @@ def load_matches(path: Path, business_date: date) -> list[Match]:
                 intel_tier=row.get("intel_tier", "B"),
                 stage=row.get("stage", "league"),
                 source_url=row.get("source_url"),
+                match_status=row.get("match_status", ""),
+                sale_status=row.get("sale_status"),
             )
         )
+    meta = payload.get("meta", {}) if isinstance(payload, dict) else {}
+    source_count = meta.get("source_match_count")
+    if source_count is not None and int(source_count) != len(result):
+        raise ValueError(f"赛单快照声明 {source_count} 场，但文件内仅有 {len(result)} 场")
     return result
