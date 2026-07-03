@@ -176,6 +176,15 @@ class SportteryProvider:
         self.cache_dir = cache_dir
         self.warnings: list[str] = []
         self.active_source = "sporttery-api" if api_url else "sporttery-official"
+        self.source_match_count = 0
+        self.parsed_match_count = 0
+
+    def _record_counts(self, source_count: int, matches: list[Match]) -> list[Match]:
+        self.source_match_count = source_count
+        self.parsed_match_count = len(matches)
+        if source_count != len(matches):
+            raise ProviderError(f"竞彩源返回 {source_count} 场，但仅解析出 {len(matches)} 场，已阻止静默漏场")
+        return matches
 
     def fetch_matches(self, business_date: date) -> list[Match]:
         if self.api_url:
@@ -188,7 +197,8 @@ class SportteryProvider:
                     cache_dir=self.cache_dir,
                 )
                 self.active_source = "sporttery-api"
-                return self.parse_sporttery_api(payload, business_date.isoformat())
+                matches = self.parse_sporttery_api(payload, business_date.isoformat())
+                return self._record_counts(self._api_source_count(payload, business_date.isoformat()), matches)
             except ProviderError as exc:
                 self.warnings.append(f"SportteryAPI 不可用，尝试官方接口：{exc}")
 
@@ -208,7 +218,8 @@ class SportteryProvider:
                 self.active_source = "sporttery-official"
                 if no_proxy:
                     self.warnings.append("代理出口被竞彩源拦截，已绕过代理直连官方接口获取实时数据")
-                return self.parse_official(payload, business_date.isoformat())
+                matches = self.parse_official(payload, business_date.isoformat())
+                return self._record_counts(self._official_source_count(payload, business_date.isoformat()), matches)
             except ProviderError as exc:
                 last_error = exc
 
@@ -217,8 +228,10 @@ class SportteryProvider:
             self.active_source = "stale-cache"
             self.warnings.append(f"实时竞彩源不可用，使用最近缓存：{last_error}")
             if "value" in cached:
-                return self.parse_official(cached, business_date.isoformat())
-            return self.parse_sporttery_api(cached, business_date.isoformat())
+                matches = self.parse_official(cached, business_date.isoformat())
+                return self._record_counts(self._official_source_count(cached, business_date.isoformat()), matches)
+            matches = self.parse_sporttery_api(cached, business_date.isoformat())
+            return self._record_counts(self._api_source_count(cached, business_date.isoformat()), matches)
         message = str(last_error)
         if "567" in message:
             message += "；代理直发与绕过代理直连均被拦截，请确认运行网络可直连中国大陆，或本地部署 SportteryAPI 并设置 SPORTTERY_API_URL"
@@ -235,6 +248,30 @@ class SportteryProvider:
             except (OSError, ValueError):
                 continue
         return None
+
+    @staticmethod
+    def _api_source_count(payload: dict[str, Any], business_date: str) -> int:
+        data = payload.get("data", payload)
+        return sum(
+            1
+            for item in data.get("matches") or []
+            if not (item_date := _iso_date(_text(item.get("businessDate") or item.get("matchNumDate"))))
+            or item_date == business_date
+        )
+
+    @staticmethod
+    def _official_source_count(payload: dict[str, Any], business_date: str) -> int:
+        groups = (payload.get("value") or {}).get("matchInfoList") or []
+        count = 0
+        for group in groups:
+            group_date = _iso_date(_text(group.get("businessDate") or group.get("matchNumDate")))
+            for item in group.get("subMatchList") or []:
+                item_date = _iso_date(
+                    _text(item.get("businessDate") or group.get("businessDate") or group.get("matchNumDate"))
+                )
+                if item_date == business_date or group_date == business_date:
+                    count += 1
+        return count
 
     @staticmethod
     def parse_sporttery_api(payload: dict[str, Any], business_date: str) -> list[Match]:
@@ -256,8 +293,6 @@ class SportteryProvider:
             )
             had_market = next((market for market in markets if market.code == "had"), None)
             odds = _had_odds(had_market, "sporttery-api")
-            if odds is None:
-                continue
             hhad_market = next((market for market in markets if market.code == "hhad"), None)
             result.append(
                 Match(
@@ -272,8 +307,13 @@ class SportteryProvider:
                     sporttery_markets=markets,
                     handicap=hhad_market.line if hhad_market else None,
                     source_url="https://webapi.sporttery.cn/",
+                    match_status=_text(item.get("matchStatus") or item.get("status")),
+                    sale_status=item.get("sellStatus"),
                 )
             )
+        source_count = SportteryProvider._api_source_count(payload, business_date)
+        if len(result) != source_count:
+            raise ProviderError(f"SportteryAPI 返回 {source_count} 场，但仅解析出 {len(result)} 场")
         return result
 
     @staticmethod
@@ -299,8 +339,6 @@ class SportteryProvider:
                 )
                 had_market = next((market for market in markets if market.code == "had"), None)
                 odds = _had_odds(had_market, "sporttery-official")
-                if odds is None:
-                    continue
                 hhad_market = next((market for market in markets if market.code == "hhad"), None)
                 result.append(
                     Match(
@@ -317,6 +355,11 @@ class SportteryProvider:
                         sporttery_markets=markets,
                         handicap=hhad_market.line if hhad_market else None,
                         source_url=OFFICIAL_URL,
+                        match_status=_text(item.get("matchStatus")),
+                        sale_status=item.get("sellStatus"),
                     )
                 )
+        source_count = SportteryProvider._official_source_count(payload, business_date)
+        if len(result) != source_count:
+            raise ProviderError(f"竞彩官方源返回 {source_count} 场，但仅解析出 {len(result)} 场")
         return result

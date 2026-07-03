@@ -13,10 +13,10 @@ from datetime import date, datetime, timezone
 from pathlib import Path
 
 from . import __version__
-from .backtest import rolling_backtest
+from .backtest import evaluate_daily_files, rolling_backtest
 from .config import Settings
 from .demo import demo_matches
-from .domain import DailyReport, Probability3
+from .domain import BacktestSummary, DailyReport, Probability3
 from .intelligence import load_intel
 from .pipeline import DailyPipeline, load_matches
 from .providers.features import ClubEloProvider, SoccerDataUnderstatProvider
@@ -63,6 +63,12 @@ def build_parser() -> argparse.ArgumentParser:
     backtest.add_argument("--refit-every", type=int, default=30)
     backtest.add_argument("--out", help="输出目录")
     backtest.add_argument("--no-open", action="store_true")
+
+    evaluate_daily = sub.add_parser("evaluate-daily", help="用赛后比分评估已保存的每日预测")
+    evaluate_daily.add_argument("prediction", help="prediction_YYYY-MM-DD.json")
+    evaluate_daily.add_argument("results", help="赛果 JSON，支持 match_id/match_no + score")
+    evaluate_daily.add_argument("--out", help="输出目录")
+    evaluate_daily.add_argument("--no-open", action="store_true")
 
     features = sub.add_parser("fetch-features", help="通过 soccerdata/ClubElo 生成 Elo+xG 特征快照")
     features.add_argument("--league", action="append", required=True, help="soccerdata 联赛 ID，可重复")
@@ -111,21 +117,36 @@ def command_daily(args: argparse.Namespace) -> int:
 def command_prepare(args: argparse.Namespace) -> int:
     day = _day(args.date)
     settings = Settings().validate()
+    warnings: list[str] = []
+    source_match_count: int | None = None
     if args.demo:
         matches = demo_matches(day)
     elif args.input:
         matches = load_matches(_path(args.input), day)
     else:
-        matches = SportteryProvider(
+        provider = SportteryProvider(
             api_url=settings.sporttery_api_url,
             api_key=settings.sporttery_api_key,
             timeout=settings.request_timeout,
             cache_dir=settings.paths.cache / "sporttery",
-        ).fetch_matches(day)
+        )
+        matches = provider.fetch_matches(day)
+        warnings.extend(provider.warnings)
+        source_match_count = provider.source_match_count
     matches = DailyPipeline._assign_tiers(matches)
     target = _path(args.out) or settings.paths.snapshots / day.isoformat()
     target.mkdir(parents=True, exist_ok=True)
-    match_path = write_json(target / f"matches_{day.isoformat()}.json", {"matches": matches})
+    match_path = write_json(
+        target / f"matches_{day.isoformat()}.json",
+        {
+            "matches": matches,
+            "meta": {
+                "source_match_count": source_match_count if source_match_count is not None else len(matches),
+                "parsed_match_count": len(matches),
+                "warnings": warnings,
+            },
+        },
+    )
     queue = {
         "business_date": day.isoformat(),
         "rules": {
@@ -151,6 +172,8 @@ def command_prepare(args: argparse.Namespace) -> int:
     print(f"赛单快照：{match_path}")
     print(f"情报队列：{queue_path}")
     print(f"全部 {len(matches)} 场 · A 级 {len(queue['matches'])} 场")
+    for warning in warnings:
+        print(f"警告：{warning}")
     return 0
 
 
@@ -179,6 +202,40 @@ def command_backtest(args: argparse.Namespace) -> int:
             f"赔率基线 Brier {summary.baseline_brier:.4f} · 模型/基线 log-loss {summary.log_loss:.4f}/{summary.baseline_log_loss:.4f}"
         )
     print(f"指标数据：{json_path}")
+    return 0
+
+
+def command_evaluate_daily(args: argparse.Namespace) -> int:
+    evaluation = evaluate_daily_files(_path(args.prediction), _path(args.results))
+    day = evaluation["business_date"] or "unknown-date"
+    target = _path(args.out) or Settings().paths.reports / "evaluation" / day
+    target.mkdir(parents=True, exist_ok=True)
+    json_path = write_json(target / f"evaluation_{day}.json", evaluation)
+    summary = BacktestSummary(**evaluation["overall"])
+    strata = []
+    for confidence, metrics in evaluation["by_confidence"].items():
+        strata.append(
+            f"置信度 {confidence}：样本 {metrics['matches']}，命中率 {metrics['accuracy']:.1%}，"
+            f"Brier {metrics['brier']:.4f}"
+        )
+    report = DailyReport(
+        business_date=f"{day} 赛后评估",
+        generated_at=datetime.now(timezone.utc).astimezone().isoformat(timespec="seconds"),
+        predictions=(),
+        sources=("保存的赛前预测快照", "用户/官方赛后比分"),
+        warnings=tuple(strata),
+        backtest=summary,
+        run_id=f"evaluation-{evaluation['prediction_run_id'][:12]}",
+    )
+    html_path = write_report(report, target / f"evaluation_{day}.html")
+    if not args.no_open:
+        webbrowser.open(html_path.as_uri())
+    print(f"已生成评估报告：{html_path}")
+    print(
+        f"已结算 {evaluation['matched']} 场 · 待结算 {len(evaluation['pending'])} 场 · "
+        f"命中率 {summary.accuracy:.2%} · Brier {summary.brier:.4f} · Log-loss {summary.log_loss:.4f}"
+    )
+    print(f"评估数据：{json_path}")
     return 0
 
 
@@ -259,6 +316,7 @@ def main(argv: list[str] | None = None) -> int:
         "daily": command_daily,
         "prepare": command_prepare,
         "backtest": command_backtest,
+        "evaluate-daily": command_evaluate_daily,
         "fetch-features": command_fetch_features,
         "validate-intel": command_validate_intel,
         "tournament": command_tournament,

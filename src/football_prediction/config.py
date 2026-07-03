@@ -54,6 +54,9 @@ class Settings:
     api_football_key: str | None = field(default_factory=lambda: os.getenv("API_FOOTBALL_KEY"))
     odds_api_key: str | None = field(default_factory=lambda: os.getenv("THE_ODDS_API_KEY"))
     market_weight: float = field(default_factory=lambda: _env_float("FOOTBALL_MARKET_WEIGHT", 0.58))
+    official_market_weight: float = field(
+        default_factory=lambda: _env_float("FOOTBALL_OFFICIAL_MARKET_WEIGHT", 0.35)
+    )
     value_threshold: float = field(default_factory=lambda: _env_float("FOOTBALL_VALUE_THRESHOLD", 0.05))
     max_intel_logit: float = field(default_factory=lambda: _env_float("FOOTBALL_MAX_INTEL_LOGIT", 0.12))
     request_timeout: float = field(default_factory=lambda: _env_float("FOOTBALL_REQUEST_TIMEOUT", 15.0))
@@ -62,6 +65,8 @@ class Settings:
     def validate(self) -> "Settings":
         if not 0 <= self.market_weight <= 1:
             raise ValueError("market_weight 必须位于 0~1")
+        if not 0 <= self.official_market_weight <= 1:
+            raise ValueError("official_market_weight 必须位于 0~1")
         if not 0 <= self.value_threshold <= 1:
             raise ValueError("value_threshold 必须位于 0~1")
         if not 0 <= self.max_intel_logit <= 0.25:

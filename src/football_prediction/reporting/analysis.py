@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from ..domain import Probability3
 from ..modeling.dixon_coles import poisson_pmf
+from ..modeling.matrix import tilt_matrix as _tilt_matrix
 
 OUTCOME_LABELS = {"home": "主胜", "draw": "平局", "away": "客胜"}
 # 经验上首回合进球占比略低于半场对半场。
@@ -17,23 +18,7 @@ FIRST_HALF_SHARE = 0.45
 
 def tilt_matrix(matrix: tuple[tuple[float, ...], ...], final: Probability3) -> list[list[float]]:
     """把比分矩阵缩放到与最终胜平负概率一致，再归一化。"""
-    n = len(matrix)
-    home_sum = sum(matrix[i][j] for i in range(n) for j in range(len(matrix[i])) if i > j)
-    # 兼容被截断或来自第三方的非方阵比分分布，避免报告阶段越界。
-    draw_sum = sum(matrix[i][i] for i in range(n) if i < len(matrix[i]))
-    away_sum = sum(matrix[i][j] for i in range(n) for j in range(len(matrix[i])) if i < j)
-    sh = final.home / home_sum if home_sum > 0 else 0.0
-    sd = final.draw / draw_sum if draw_sum > 0 else 0.0
-    sa = final.away / away_sum if away_sum > 0 else 0.0
-    tilted = []
-    for i in range(n):
-        row = []
-        for j in range(len(matrix[i])):
-            factor = sh if i > j else sd if i == j else sa
-            row.append(matrix[i][j] * factor)
-        tilted.append(row)
-    total = sum(sum(r) for r in tilted) or 1.0
-    return [[value / total for value in row] for row in tilted]
+    return [list(row) for row in _tilt_matrix(matrix, final)]
 
 
 def over_under(matrix: list[list[float]], line: float) -> dict[str, float]:

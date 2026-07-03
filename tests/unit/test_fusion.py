@@ -2,7 +2,9 @@ import unittest
 
 from football_prediction.config import Settings
 from football_prediction.domain import (
+    BettingMarketOdds,
     IntelEvidence,
+    MarketOutcomeOdds,
     Match,
     MatchIntel,
     Outcome,
@@ -76,6 +78,49 @@ class FusionTests(unittest.TestCase):
         self.assertGreater(prediction.final_probs.home, 0.5)
         self.assertEqual(prediction.confidence, "low")
         self.assertIn("已暂停输出价值信号", " ".join(prediction.warnings))
+
+    def test_hhad_only_match_uses_multi_market_score_calibration(self):
+        hhad = BettingMarketOdds(
+            "hhad",
+            "让球胜平负",
+            (
+                MarketOutcomeOdds("h", "home", "主胜", 2.22),
+                MarketOutcomeOdds("d", "draw", "平", 3.62),
+                MarketOutcomeOdds("a", "away", "客胜", 2.48),
+            ),
+            line=-2,
+        )
+        ttg = BettingMarketOdds(
+            "ttg",
+            "总进球",
+            tuple(
+                MarketOutcomeOdds(f"s{key.rstrip('+')}", key, f"{key}球", odds)
+                for key, odds in zip(
+                    ("0", "1", "2", "3", "4", "5", "6", "7+"),
+                    (19.0, 6.2, 4.0, 3.4, 4.4, 7.25, 13.5, 17.5),
+                    strict=True,
+                )
+            ),
+        )
+        match = Match(
+            id="hhad-only",
+            business_date="2026-07-03",
+            match_no="周五087",
+            league="世界杯",
+            home="阿根廷",
+            away="佛得角",
+            kickoff_at="2026-07-04T06:00:00+08:00",
+            sporttery_markets=(hhad, ttg),
+            handicap=-2,
+        )
+
+        prediction = PredictionEngine(Settings()).predict(match, TeamFeatures("阿根廷"), TeamFeatures("佛得角"))
+
+        self.assertEqual(prediction.analysis_mode, "market_baseline")
+        self.assertEqual(prediction.calibrated_markets, ("hhad", "ttg"))
+        self.assertGreater(prediction.expected_home_goals, prediction.expected_away_goals + 1.5)
+        self.assertNotAlmostEqual(prediction.expected_home_goals, 1.452, places=2)
+        self.assertIn("普通胜平负尚未开售", " ".join(prediction.warnings))
 
 
 if __name__ == "__main__":

@@ -110,6 +110,8 @@ class Match:
     intel_tier: str = "B"
     stage: str = "league"
     source_url: str | None = None
+    match_status: str = ""
+    sale_status: int | None = None
 
     def market(self, code: str) -> BettingMarketOdds | None:
         return next((market for market in self.sporttery_markets if market.code == code), None)
@@ -197,6 +199,9 @@ class MatchPrediction:
     home_features: TeamFeatures | None = None
     away_features: TeamFeatures | None = None
     reference_market_odds: ThreeWayOdds | None = None
+    official_market_probs: Probability3 | None = None
+    analysis_mode: str = "prior_only"
+    calibrated_markets: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)

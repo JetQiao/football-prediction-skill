@@ -16,6 +16,12 @@ from .flags import flag_data_uri, flag_for
 OUTCOME_LABELS = {"home": "主胜", "draw": "平局", "away": "客胜"}
 CONFIDENCE_LABELS = {"high": "高", "mid": "中", "low": "低"}
 VALUE_LABELS = {"value": "值得", "fair": "合理", "risk": "规避"}
+ANALYSIS_MODE_LABELS = {
+    "hybrid": "独立模型 + 市场校准",
+    "statistical": "独立统计模型",
+    "market_baseline": "多玩法市场基线",
+    "prior_only": "数据不足占位",
+}
 SOURCE_LABELS = {
     "sporttery-official": "中国体育彩票官方接口",
     "sporttery-api": "SportteryAPI",
@@ -75,6 +81,10 @@ def _build_card(prediction: MatchPrediction) -> dict:
         top_label,
         markets,
     )
+    if prediction.analysis_mode == "market_baseline":
+        summary = summary.replace("模型", "多玩法市场基线")
+    elif prediction.analysis_mode == "prior_only":
+        summary = "当前缺少可用玩法与独立实力数据，系统不输出方向性推荐；以下概率仅用于占位与数据完整性检查。"
     value = None
     if prediction.value:
         value = {
@@ -86,14 +96,16 @@ def _build_card(prediction: MatchPrediction) -> dict:
             "edge": prediction.value.edge,
         }
     odds = match.sporttery_odds
-    official_probs = remove_vig(odds) if odds else None
+    had_probs = remove_vig(odds) if odds else None
     external_odds = prediction.reference_market_odds
     home_features = _feature_payload(prediction.home_features, match.home)
     away_features = _feature_payload(prediction.away_features, match.away)
     feature_available = home_features["available"] and away_features["available"]
     intel_evidence_count = len(prediction.intel.evidences) if prediction.intel else 0
     intel_completeness = prediction.intel.completeness if prediction.intel else 0.0
-    official_update = _timestamp(match.business_date, odds.updated_at if odds else None)
+    market_updates = [market.updated_at for market in match.sporttery_markets if market.updated_at]
+    raw_official_update = odds.updated_at if odds else max(market_updates, default="")
+    official_update = _timestamp(match.business_date, raw_official_update)
     official_markets = {
         market.code: {
             "code": market.code,
@@ -125,8 +137,8 @@ def _build_card(prediction: MatchPrediction) -> dict:
         {
             "code": "sporttery",
             "label": "官方 SP",
-            "available": odds is not None,
-            "source": _source_label(odds.source if odds else None),
+            "available": bool(official_markets),
+            "source": _source_label(odds.source if odds else "sporttery-official" if match.source_url else None),
             "updated_at": official_update,
             "note": f"已获取 {len(official_markets)}/5 类竞彩玩法",
         },
@@ -159,11 +171,31 @@ def _build_card(prediction: MatchPrediction) -> dict:
     is_demo = match.id.startswith("demo-") or bool(odds and odds.source == "demo")
     probability_delta = (
         {
-            key: prediction.final_probs.get(key) - official_probs.get(key)
+            key: prediction.final_probs.get(key) - had_probs.get(key)
             for key in ("home", "draw", "away")
         }
-        if official_probs
+        if had_probs
         else None
+    )
+    analysis_label = ANALYSIS_MODE_LABELS.get(prediction.analysis_mode, prediction.analysis_mode)
+    pick_title = (
+        "模型首选"
+        if prediction.analysis_mode in ("hybrid", "statistical")
+        else "市场倾向"
+        if prediction.analysis_mode == "market_baseline"
+        else "暂不判断"
+    )
+    recommended_label = (
+        OUTCOME_LABELS[prediction.recommended.value]
+        if prediction.analysis_mode != "prior_only"
+        else "暂无可靠结论"
+    )
+    sale_label = (
+        "玩法待开售"
+        if not official_markets
+        else "部分玩法在售"
+        if len(official_markets) < 5
+        else "全部玩法在售"
     )
     return {
         "match_no": match.match_no,
@@ -177,18 +209,24 @@ def _build_card(prediction: MatchPrediction) -> dict:
         "handicap": match.handicap,
         "intel_tier": match.intel_tier,
         "odds": {"home": odds.home, "draw": odds.draw, "away": odds.away} if odds else None,
-        "official_probs": official_probs,
+        "official_probs": had_probs,
+        "official_market_probs": prediction.official_market_probs,
         "official_update": official_update,
-        "official_source": _source_label(odds.source if odds else None),
+        "official_source": _source_label(odds.source if odds else "sporttery-official" if match.source_url else None),
         "source_url": match.source_url,
         "official_markets": official_markets,
         "official_market_count": len(official_markets),
+        "sale_label": sale_label,
         "final": prediction.final_probs,
         "model": prediction.model_probs,
         "market": prediction.market_probs,
         "probability_delta": probability_delta,
         "recommended": prediction.recommended.value,
-        "recommended_label": OUTCOME_LABELS[prediction.recommended.value],
+        "recommended_label": recommended_label,
+        "pick_title": pick_title,
+        "analysis_mode": prediction.analysis_mode,
+        "analysis_label": analysis_label,
+        "calibrated_markets": list(prediction.calibrated_markets),
         "confidence": prediction.confidence,
         "confidence_label": CONFIDENCE_LABELS.get(prediction.confidence, prediction.confidence),
         "value": value,
@@ -253,7 +291,7 @@ def render_report(report: DailyReport) -> str:
         flag_styles=flag_styles,
         high_count=sum(1 for card in cards if card["confidence"] == "high"),
         value_count=sum(1 for card in cards if card["value"] and card["value"]["flag"] == "value"),
-        official_sp_count=sum(1 for card in cards if card["odds"]),
+        official_sp_count=sum(1 for card in cards if card["official_markets"]),
         intel_evidence_count=sum(card["intel_evidence_count"] for card in cards),
         degraded_count=sum(1 for card in cards if card["is_degraded"]),
         average_coverage=(sum(card["coverage_pct"] for card in cards) / len(cards)) if cards else 0,

@@ -40,7 +40,7 @@ npx -y github:JetQiao/football-prediction-skill doctor
 football-predict prepare --date YYYY-MM-DD --out /tmp/football-predict-YYYY-MM-DD
 ```
 
-3. 读取 `matches_*.json` 和 `intel_queue_*.json`。对所有 B 级场保留模型基线；只对队列中的 A 级场执行深度联网检索。
+3. 读取 `matches_*.json` 和 `intel_queue_*.json`。对所有 B 级场保留模型基线；只对队列中的 A 级场执行深度联网检索。赛单可能包含普通胜平负未开售但其他玩法在售的场次；不得手工删除。源场次数与解析场次数不一致时先修复数据源，不继续生成残缺报告。
 4. 按 [情报流程](references/intelligence.md) 搜索并写入 `intel.json`。禁止使用开赛后的文章、赛果或收盘后才可见的数据。
 5. 校验情报：
 
@@ -65,6 +65,8 @@ football-predict daily \
 
 绝不把历史收盘赔率注入更早时点的预测。缺少实时市场时允许降级，但必须保留报告警告。
 
+官方 HAD、HHAD、比分、总进球和半全场会联合校准到同一个比分矩阵。没有独立 Elo/xG 或外部市场时只能称为“多玩法市场基线”，不得包装成独立模型优势。
+
 ## 回测
 
 从 football-data.co.uk 获取用户有权使用的联赛 CSV，在本地运行：
@@ -74,6 +76,14 @@ football-predict backtest history.csv --min-train 120 --window 600
 ```
 
 比较 Brier、log-loss 与竞彩 SP 基线；同时报告样本量、ROI 和最大回撤。不要只挑表现好的联赛或时间段。
+
+每日预测赛后使用通用赛果文件结算：
+
+```bash
+football-predict evaluate-daily prediction_YYYY-MM-DD.json results.json
+```
+
+评估产物按联赛、置信度和分析模式分层，未完赛场次保留为 `pending`。
 
 ## 输出规则
 
