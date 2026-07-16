@@ -26,8 +26,10 @@
       <table><thead><tr><th>概率区间</th><th>平均预测</th><th>实际命中</th><th>样本</th></tr></thead><tbody>{% for row in report.backtest.reliability %}<tr><td>{{ row.lower|pct0 }}–{{ row.upper|pct0 }}</td><td>{{ row.predicted|pct }}</td><td>{{ row.actual|pct }}</td><td>{{ row.count }}</td></tr>{% endfor %}</tbody></table>
     </article>
     <article>
-      <h3>决策覆盖</h3>
-      <table><thead><tr><th>状态</th><th>数量</th></tr></thead><tbody>{% for row in report.backtest.decision_counts %}<tr><td>{{ row.state }}</td><td>{{ row.count }}</td></tr>{% endfor %}</tbody></table>
+      <h3>方向覆盖</h3>
+      <table><thead><tr><th>状态</th><th>数量</th></tr></thead><tbody>{% for row in report.backtest.direction_counts %}<tr><td>{{ row.state }}</td><td>{{ row.count }}</td></tr>{% endfor %}</tbody></table>
+      <h3 class="subtable-title">价值覆盖</h3>
+      <table><thead><tr><th>状态</th><th>数量</th></tr></thead><tbody>{% for row in report.backtest.value_counts %}<tr><td>{{ row.state }}</td><td>{{ row.count }}</td></tr>{% endfor %}</tbody></table>
     </article>
   </div>
 </section>

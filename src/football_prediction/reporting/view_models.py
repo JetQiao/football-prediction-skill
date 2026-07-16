@@ -4,7 +4,13 @@ from __future__ import annotations
 
 import hashlib
 
-from ..domain import DecisionState, MatchPrediction, TeamFeatures
+from ..domain import (
+    DecisionState,
+    DirectionState,
+    MatchPrediction,
+    TeamFeatures,
+    ValueState,
+)
 from ..modeling.odds import remove_vig
 from .analysis import derive_markets, plain_summary
 from .flags import flag_for
@@ -17,6 +23,25 @@ DECISION_LABELS = {
     DecisionState.NO_EDGE.value: "无优势",
     DecisionState.ABSTAIN.value: "弃权",
 }
+DIRECTION_LABELS = {
+    DirectionState.STRONG.value: "明确方向",
+    DirectionState.MODERATE.value: "中等方向",
+    DirectionState.SLIGHT.value: "轻微方向",
+    DirectionState.UNAVAILABLE.value: "数据不可用",
+}
+DIRECTION_SHORT_LABELS = {
+    DirectionState.STRONG.value: "明确",
+    DirectionState.MODERATE.value: "中等",
+    DirectionState.SLIGHT.value: "轻微",
+    DirectionState.UNAVAILABLE.value: "不可用",
+}
+VALUE_LABELS = {
+    ValueState.CANDIDATE.value: "候选价值",
+    ValueState.WATCH.value: "价值观察",
+    ValueState.NO_EDGE.value: "无价格优势",
+    ValueState.UNVERIFIED.value: "未独立验证",
+    ValueState.UNAVAILABLE.value: "价格不可用",
+}
 ANALYSIS_MODE_LABELS = {
     "hybrid": "统计模型 + 独立参考市场",
     "statistical": "独立统计模型",
@@ -28,6 +53,7 @@ DATA_QUALITY_LABELS = {
     "complete": "数据完整",
     "partial": "部分数据",
     "market_only": "仅市场",
+    "market_consensus": "竞彩市场共识",
     "insufficient": "数据不足",
 }
 SOURCE_LABELS = {
@@ -92,13 +118,23 @@ def build_match_view(prediction: MatchPrediction) -> dict:
         top_label,
         markets,
     )
-    state = (
+    legacy_state = (
         prediction.decision_state.value
         if isinstance(prediction.decision_state, DecisionState)
         else str(prediction.decision_state)
     )
-    if state == DecisionState.ABSTAIN.value:
-        summary = f"本场已弃权：{prediction.decision_reason}。概率仅用于信息展示，不构成方向或价值信号。"
+    direction_state = (
+        prediction.direction_state.value
+        if isinstance(prediction.direction_state, DirectionState)
+        else str(prediction.direction_state)
+    )
+    value_state = (
+        prediction.value_state.value
+        if isinstance(prediction.value_state, ValueState)
+        else str(prediction.value_state)
+    )
+    if direction_state == DirectionState.UNAVAILABLE.value:
+        summary = f"本场方向数据不可用：{prediction.direction_reason}。中性先验仅用于占位展示。"
 
     target_odds = match.sporttery_odds
     target_probs = remove_vig(target_odds, method=prediction.devig_method) if target_odds else None
@@ -222,8 +258,30 @@ def build_match_view(prediction: MatchPrediction) -> dict:
         ),
         "recommended": prediction.recommended.value,
         "recommended_label": OUTCOME_LABELS[prediction.recommended.value],
-        "decision_state": state,
-        "decision_label": DECISION_LABELS.get(state, state),
+        "direction_state": direction_state,
+        "direction_state_label": DIRECTION_LABELS.get(direction_state, direction_state),
+        "direction_short_label": DIRECTION_SHORT_LABELS.get(direction_state, direction_state),
+        "direction_label": (
+            f"{OUTCOME_LABELS[prediction.recommended.value]} · "
+            f"{DIRECTION_SHORT_LABELS.get(direction_state, direction_state)}"
+            if direction_state != DirectionState.UNAVAILABLE.value
+            else DIRECTION_LABELS[DirectionState.UNAVAILABLE.value]
+        ),
+        "direction_reason": prediction.direction_reason,
+        "direction_margin": prediction.direction_margin,
+        "direction_probability": prediction.final_probs.get(prediction.recommended),
+        "direction_rank": {
+            DirectionState.STRONG.value: 3,
+            DirectionState.MODERATE.value: 2,
+            DirectionState.SLIGHT.value: 1,
+            DirectionState.UNAVAILABLE.value: 0,
+        }.get(direction_state, 0),
+        "value_state": value_state,
+        "value_label": VALUE_LABELS.get(value_state, value_state),
+        "value_reason": prediction.value_reason,
+        # v0.5.0 兼容字段，不再驱动新版报告的主状态。
+        "decision_state": legacy_state,
+        "decision_label": DECISION_LABELS.get(legacy_state, legacy_state),
         "decision_reason": prediction.decision_reason,
         "confidence": prediction.confidence,
         "confidence_rank": {"high": 3, "mid": 2, "low": 1}.get(prediction.confidence, 0),

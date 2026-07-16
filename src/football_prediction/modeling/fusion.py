@@ -7,7 +7,12 @@ import math
 from ..config import Settings
 from ..domain import Match, MatchIntel, MatchPrediction, Outcome, Probability3, TeamFeatures, ThreeWayOdds
 from ..intelligence.validator import validate_intel
-from ..policy import assess_confidence, assess_decision
+from ..policy import (
+    assess_confidence,
+    assess_direction,
+    assess_value_decision,
+    legacy_decision,
+)
 from ..providers.names import name_key
 from .calibration import TemperatureCalibrator
 from .dixon_coles import DixonColesModel, DixonColesPrediction, build_prediction, predict_from_features
@@ -183,7 +188,7 @@ class PredictionEngine:
                 fused = official_probs
                 matrix = official_calibration.prediction.matrix
         elif official_calibration and not independent_ready:
-            # 无独立数据时只能展示目标市场共识，并强制弃权。
+            # 目标市场共识可以支持方向，但不得再用同一价格证明存在价值。
             fused = official_probs
             matrix = official_calibration.prediction.matrix
             target_used_as_signal = True
@@ -211,8 +216,10 @@ class PredictionEngine:
             calibration_sample_size=calibration_sample_size,
             intel_completeness=intel.completeness if intel else 0.0,
             is_a_tier=match.intel_tier == "A",
+            official_market_ready=official_calibration is not None,
         )
-        decision = assess_decision(
+        direction = assess_direction(final, analysis_mode=analysis_mode)
+        value_decision = assess_value_decision(
             final,
             target_odds,
             independent_ready=independent_ready,
@@ -222,6 +229,7 @@ class PredictionEngine:
             value_threshold=self.settings.value_threshold,
             devig_method=method,
         )
+        decision = legacy_decision(direction, value_decision)
         recommended = final.best()
         reasons = self._reasons(
             match,
@@ -276,6 +284,11 @@ class PredictionEngine:
             official_market_probs=official_probs,
             analysis_mode=analysis_mode,
             calibrated_markets=official_calibration.used_markets if official_calibration else (),
+            direction_state=direction.state,
+            direction_reason=direction.reason,
+            direction_margin=direction.margin,
+            value_state=value_decision.state,
+            value_reason=value_decision.reason,
             decision_state=decision.state,
             decision_reason=decision.reason,
             uncertainty=confidence_assessment.uncertainty,
@@ -361,19 +374,19 @@ class PredictionEngine:
     ) -> list[str]:
         warnings: list[str] = []
         if analysis_mode == "market_baseline":
-            warnings.append("缺少独立实力或参考市场，当前仅展示目标竞彩市场共识")
+            warnings.append("当前方向来自目标竞彩市场共识，价格价值保持未独立验证")
         elif analysis_mode == "prior_only":
-            warnings.append("当前没有可用模型、参考市场或完整官方玩法，已强制弃权")
+            warnings.append("当前没有可用模型、参考市场或完整官方玩法，方向数据不可用")
         elif not external_ready:
-            warnings.append("缺少同一预测截点的独立参考市场，无法评估收盘价值")
+            warnings.append("缺少同一预测截点的独立参考市场，价格价值验证能力受限")
         if target_used_as_signal:
-            warnings.append("目标竞彩价格参与了概率形成，已禁止输出循环价值信号")
+            warnings.append("目标竞彩价格参与了概率形成，价值状态已标记为未独立验证")
         if target_odds is None and match.sporttery_markets:
             warnings.append("普通胜平负尚未开售，当前只展示开放玩法推演")
         if match.sporttery_markets and not official_calibration:
             warnings.append("已获取的官方玩法选项不完整，未进入多玩法共识计算")
         if not independent_ready:
-            warnings.append("独立数据不足，已暂停输出价值信号并将决策状态设为弃权")
+            warnings.append("独立数据不足：保留概率方向，但不输出价值候选")
         if calibration_status != "validated" and independent_ready:
             warnings.append("模型尚未通过样本外校准晋级门槛，候选价值功能保持关闭")
         if match.intel_tier == "A" and (not intel or intel.completeness < 0.6):

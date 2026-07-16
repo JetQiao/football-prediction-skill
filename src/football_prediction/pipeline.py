@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections import Counter
 from dataclasses import replace
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
@@ -33,6 +34,14 @@ from .snapshots.contracts import canonical_payload_hash
 from .storage import read_json, write_json
 
 POPULAR_LEAGUES = ("世界杯", "欧洲杯", "欧冠", "英超", "西甲", "德甲", "意甲", "法甲", "中超")
+
+
+def _state_counts(rows: Iterable[object], attribute: str, states: tuple[str, ...]) -> dict[str, int]:
+    """统一统计枚举或字符串状态，避免 manifest 中重复实现转换逻辑。"""
+
+    values = (getattr(row, attribute) for row in rows)
+    counts = Counter(str(getattr(value, "value", value)) for value in values)
+    return {state: counts[state] for state in states}
 
 
 class DailyPipeline:
@@ -286,10 +295,21 @@ class DailyPipeline:
                 "schema_version": report.schema_version,
                 "model_versions": model_versions,
                 "calibration_statuses": calibration_statuses,
-                "decision_counts": {
-                    state: sum(str(row.decision_state) == state or getattr(row.decision_state, "value", None) == state for row in predictions)
-                    for state in ("candidate", "lean", "no_edge", "abstain")
-                },
+                "decision_counts": _state_counts(
+                    predictions,
+                    "decision_state",
+                    ("candidate", "lean", "no_edge", "abstain"),
+                ),
+                "direction_counts": _state_counts(
+                    predictions,
+                    "direction_state",
+                    ("strong", "moderate", "slight", "unavailable"),
+                ),
+                "value_counts": _state_counts(
+                    predictions,
+                    "value_state",
+                    ("candidate", "watch", "no_edge", "unverified", "unavailable"),
+                ),
                 "snapshots": snapshot_records,
                 "artifacts": {"json": str(json_path), "html": str(html_path)},
             },

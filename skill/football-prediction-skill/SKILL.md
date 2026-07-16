@@ -1,6 +1,6 @@
 ---
 name: football-prediction-skill
-description: Generate explainable China Sports Lottery football predictions with event-time snapshots, strict reference/target market separation, sourced pre-match intelligence, Dixon-Coles probabilities, model-gated value decisions, rolling backtests, tournament simulations, and self-contained dark HTML reports. Use for 竞彩足球、足球预测、竞彩赛单、胜平负概率、让球分析、比分预测、赔率价值、串关研究、赛前情报、足球回测、小组排名、淘汰赛对阵、football prediction or Sporttery analysis.
+description: Generate explainable China Sports Lottery football predictions with event-time snapshots, separate directional and value states, strict reference/target market isolation, sourced pre-match intelligence, Dixon-Coles probabilities, rolling backtests, tournament simulations, and self-contained dark HTML reports. Use for 竞彩足球、足球预测、竞彩赛单、胜平负概率、让球分析、比分预测、赔率价值、串关研究、赛前情报、足球回测、小组排名、淘汰赛对阵、football prediction or Sporttery analysis.
 ---
 
 # 竞彩足球智能预测
@@ -12,8 +12,10 @@ description: Generate explainable China Sports Lottery football predictions with
 - 固定预测截点 `as_of`；只允许 `observed_at <= as_of < kickoff_at` 的数据进入模型。
 - 明确区分 `reference_market`、`target_market` 和 `benchmark_market`。
 - 不得用目标竞彩价格生成概率后，再用同一价格证明存在价值。
+- 方向判断与价格价值必须分开输出；有有效概率时输出 `strong / moderate / slight`，只有中性占位先验才输出 `unavailable`。
 - 只有独立概率、校准状态和价格优势都通过门槛时，才输出 `candidate`。
-- 数据不足、未来数据风险或校准未通过时，输出 `lean / no_edge / abstain`。
+- 缺少独立概率或目标价格参与概率形成时，价值输出 `unverified`，不得因此隐藏方向。
+- 正向价格差尚未过门槛时输出 `watch`，没有正向优势时输出 `no_edge`，目标价格缺失时输出 `unavailable`。
 - 不执行下注，不承诺命中率或盈利，不使用“稳、必选、稳赚”等措辞。
 
 ## 选择工作流
@@ -69,7 +71,7 @@ football-predict daily \
   --intel /tmp/football-predict-YYYY-MM-DD/intel.json
 ```
 
-7. 回复只提供 HTML 绝对路径、场次数、四态决策数量和关键降级警告。概率不是承诺。
+7. 回复只提供 HTML 绝对路径、场次数、明确/中等/轻微方向数量、价值候选数量、方向不可用数量和关键降级警告。概率不是承诺。
 
 ## 市场与特征
 
@@ -78,7 +80,7 @@ football-predict daily \
 - 官方竞彩 HAD/HHAD/SP 默认是 `target_market`。
 - 用户传入或 The Odds API 的独立市场默认是 `reference_market`。
 - football-data 历史赔率默认是 `benchmark_market`。
-- 只有竞彩自身多玩法时，可以展示“目标市场共识”，但必须禁止独立价值候选。
+- 只有竞彩自身多玩法时，可以展示“目标市场共识”方向，但价值必须标记为 `unverified`，并禁止独立价值候选。
 
 ## 回测与模型
 
@@ -120,5 +122,5 @@ football-predict evaluate-daily prediction_YYYY-MM-DD.json results.json
 
 - 保留 `prediction_*.json`、`report_*.html`、`manifest_*.json` 和快照 ID。
 - HTML 必须单文件、离线可用且不发网络请求。
-- 报告保留 `as_of`、来源、模型版本、训练截止、校准状态、数据缺失和弃权原因。
+- 报告保留 `as_of`、来源、模型版本、训练截止、校准状态、数据缺失、方向依据和价值状态原因。
 - 不在回复中粘贴完整赛单表；HTML 是主要交付物。

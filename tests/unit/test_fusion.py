@@ -4,6 +4,7 @@ from football_prediction.config import Settings
 from football_prediction.domain import (
     AvailabilityFact,
     BettingMarketOdds,
+    DirectionState,
     IntelEvidence,
     MarketOutcomeOdds,
     Match,
@@ -12,6 +13,7 @@ from football_prediction.domain import (
     Probability3,
     TeamFeatures,
     ThreeWayOdds,
+    ValueState,
 )
 from football_prediction.modeling.fusion import PredictionEngine, apply_intelligence, logarithmic_pool
 
@@ -83,8 +85,10 @@ class FusionTests(unittest.TestCase):
         prediction = PredictionEngine(Settings()).predict(match, TeamFeatures("主队"), TeamFeatures("客队"))
         self.assertIsNone(prediction.value)
         self.assertGreater(prediction.final_probs.home, 0.5)
-        self.assertEqual(prediction.confidence, "low")
-        self.assertIn("已暂停输出价值信号", " ".join(prediction.warnings))
+        self.assertEqual(prediction.confidence, "mid")
+        self.assertEqual(prediction.direction_state, DirectionState.STRONG)
+        self.assertEqual(prediction.value_state, ValueState.UNVERIFIED)
+        self.assertIn("保留概率方向", " ".join(prediction.warnings))
 
     def test_hhad_only_match_uses_multi_market_score_calibration(self):
         hhad = BettingMarketOdds(

@@ -178,6 +178,8 @@ def rolling_backtest(
                     actual,
                     benchmark,
                     decision_state=prediction.decision_state,
+                    direction_state=prediction.direction_state,
+                    value_state=prediction.value_state,
                     target_used_as_signal=prediction.target_used_as_signal,
                     devig_method=devig_method,
                 )

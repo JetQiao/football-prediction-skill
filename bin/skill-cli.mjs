@@ -25,6 +25,7 @@ const runtime = join(state, "runtime");
 const runtimePackage = join(runtime, "football_prediction");
 const runtimeEntry = join(runtimePackage, "__main__.py");
 const pythonInVenv = process.platform === "win32" ? join(venv, "Scripts", "python.exe") : join(venv, "bin", "python");
+const packageVersion = JSON.parse(readFileSync(join(root, "package.json"), "utf8")).version;
 const args = process.argv.slice(2);
 const command = args[0] || "install";
 const runtimeDependencies = [
@@ -67,6 +68,17 @@ function dependenciesReady() {
     { stdio: "ignore" },
   );
   return probe.status === 0;
+}
+
+function runtimeSourceReady() {
+  if (!existsSync(runtimeEntry)) return false;
+  try {
+    const initSource = readFileSync(join(runtimePackage, "__init__.py"), "utf8");
+    const match = initSource.match(/__version__\s*=\s*["']([^"']+)["']/);
+    return match?.[1] === packageVersion;
+  } catch {
+    return false;
+  }
 }
 
 function installDependencies() {
@@ -231,7 +243,8 @@ try {
     rmSync(state, { recursive: true, force: true });
     console.log("✓ 已卸载 Skill 与本地运行环境（历史报告未存放在 Skill 目录中）");
   } else {
-    if (!existsSync(pythonInVenv) || !existsSync(runtimeEntry) || !dependenciesReady()) installRuntime();
+    // npx 或全局包升级后自动刷新持久化 Python 运行源码，避免继续执行旧版本。
+    if (!existsSync(pythonInVenv) || !dependenciesReady() || !runtimeSourceReady()) installRuntime();
     const forwarded = command === "demo" ? ["daily", "--demo", ...args.slice(1)] : args;
     run(pythonInVenv, ["-m", "football_prediction", ...forwarded], { env: runtimeEnvironment() });
   }

@@ -54,10 +54,15 @@ def render_report(report: DailyReport) -> str:
     report_json = json.dumps(payload, ensure_ascii=False, separators=(",", ":")).replace("<", "\\u003c")
 
     counts = {
-        "candidate": sum(card["decision_state"] == "candidate" for card in cards),
-        "lean": sum(card["decision_state"] == "lean" for card in cards),
-        "no_edge": sum(card["decision_state"] == "no_edge" for card in cards),
-        "abstain": sum(card["decision_state"] == "abstain" for card in cards),
+        "direction_strong": sum(card["direction_state"] == "strong" for card in cards),
+        "direction_moderate": sum(card["direction_state"] == "moderate" for card in cards),
+        "direction_slight": sum(card["direction_state"] == "slight" for card in cards),
+        "direction_unavailable": sum(card["direction_state"] == "unavailable" for card in cards),
+        "value_candidate": sum(card["value_state"] == "candidate" for card in cards),
+        "value_watch": sum(card["value_state"] == "watch" for card in cards),
+        "value_no_edge": sum(card["value_state"] == "no_edge" for card in cards),
+        "value_unverified": sum(card["value_state"] == "unverified" for card in cards),
+        "value_unavailable": sum(card["value_state"] == "unavailable" for card in cards),
         "complete": sum(card["data_quality"] == "complete" for card in cards),
         "degraded": sum(card["is_degraded"] for card in cards),
     }

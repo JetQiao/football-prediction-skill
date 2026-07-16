@@ -20,16 +20,18 @@
       <span>排序</span>
       <select id="sortFilter">
         <option value="kickoff">按开赛时间</option>
+        <option value="direction">按方向强度</option>
         <option value="edge">按概率优势</option>
         <option value="confidence">按置信度</option>
       </select>
     </label>
-    <div class="segmented" role="group" aria-label="决策状态">
+    <div class="segmented" role="group" aria-label="方向与价值状态">
       <button class="filter-button active" type="button" data-filter="all" aria-pressed="true">全部</button>
-      <button class="filter-button" type="button" data-filter="candidate" aria-pressed="false">候选价值</button>
-      <button class="filter-button" type="button" data-filter="lean" aria-pressed="false">有方向</button>
-      <button class="filter-button" type="button" data-filter="no_edge" aria-pressed="false">无优势</button>
-      <button class="filter-button" type="button" data-filter="abstain" aria-pressed="false">弃权</button>
+      <button class="filter-button" type="button" data-filter="direction:strong" aria-pressed="false">明确方向</button>
+      <button class="filter-button" type="button" data-filter="direction:moderate" aria-pressed="false">中等方向</button>
+      <button class="filter-button" type="button" data-filter="direction:slight" aria-pressed="false">轻微方向</button>
+      <button class="filter-button" type="button" data-filter="value:candidate" aria-pressed="false">价值候选</button>
+      <button class="filter-button" type="button" data-filter="direction:unavailable" aria-pressed="false">数据不可用</button>
     </div>
   </div>
 
@@ -40,8 +42,8 @@
       <span role="columnheader">校准概率</span>
       <span role="columnheader">公平赔率</span>
       <span role="columnheader">竞彩 SP</span>
-      <span role="columnheader">Edge</span>
-      <span role="columnheader">结论</span>
+      <span role="columnheader">方向判断</span>
+      <span role="columnheader">价值判断</span>
     </div>
     <div id="matchRows" class="match-rows">
       {% for c in cards %}
@@ -51,7 +53,9 @@
         role="row"
         data-dialog="{{ c.dialog_id }}"
         data-league="{{ c.league }}"
-        data-state="{{ c.decision_state }}"
+        data-direction="{{ c.direction_state }}"
+        data-value="{{ c.value_state }}"
+        data-direction-rank="{{ c.direction_rank }}"
         data-edge="{{ c.edge if c.edge is not none else -9 }}"
         data-confidence="{{ c.confidence_rank }}"
         data-kickoff="{{ c.kickoff_full }}"
@@ -70,10 +74,17 @@
           {% if c.target_odds %}<b>{{ c.target_odds.home|num }}</b><b>{{ c.target_odds.draw|num }}</b><b>{{ c.target_odds.away|num }}</b>{% else %}<b class="span-three">待开售</b>{% endif %}
           <small>主 / 平 / 客</small>
         </span>
-        <span class="edge-cell {% if c.edge and c.edge > 0 %}positive{% endif %}" role="cell" data-label="Edge"><strong>{{ c.edge|signed_pct }}</strong><small>{{ c.value.pick_label if c.value else "不可比较" }}</small></span>
-        <span class="decision-cell" role="cell" data-label="结论">
-          <span class="decision-badge state-{{ c.decision_state }}">{{ c.decision_label }}</span>
+        <span class="direction-cell" role="cell" data-label="方向判断">
+          <span class="status-badge direction-{{ c.direction_state }}">{{ c.direction_label }}</span>
           <small>{{ c.confidence_label }}置信 · {{ c.data_quality_label }}</small>
+        </span>
+        <span class="value-cell {% if c.edge and c.edge > 0 %}positive{% endif %}" role="cell" data-label="价值判断">
+          <span class="status-badge value-{{ c.value_state }}">{{ c.value_label }}</span>
+          <small>
+            {% if c.value %}{{ c.value.pick_label }} {{ c.edge|signed_pct }}
+            {% elif c.value_state == "unverified" %}方向有效 · 价值待验
+            {% else %}{{ c.value_reason }}{% endif %}
+          </small>
         </span>
       </button>
       {% endfor %}

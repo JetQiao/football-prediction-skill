@@ -26,6 +26,10 @@ jobs:
       - run: python -m venv --system-site-packages "$RUNNER_TEMP/football-predict-installer"
       - run: FOOTBALL_PREDICT_HOME="$RUNNER_TEMP/football-predict-installer" node bin/skill-cli.mjs install
       - run: FOOTBALL_PREDICT_HOME="$RUNNER_TEMP/football-predict-installer" football-predict --version
+      - name: Verify launcher refreshes stale runtime
+        run: |
+          echo '__version__ = "0.0.0"' > "$RUNNER_TEMP/football-predict-installer/runtime/football_prediction/__init__.py"
+          test "$(FOOTBALL_PREDICT_HOME="$RUNNER_TEMP/football-predict-installer" node bin/skill-cli.mjs --version)" = "$(node -p "require('./package.json').version")"
       - run: FOOTBALL_PREDICT_HOME="$RUNNER_TEMP/football-predict-installer" football-predict daily --demo --no-open --out ./reports/installer
       - uses: actions/upload-artifact@v4
         with:
