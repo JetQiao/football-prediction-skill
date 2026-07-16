@@ -24,12 +24,31 @@ class MarketRole(str, Enum):
 
 
 class DecisionState(str, Enum):
-    """报告中统一使用的决策状态。"""
+    """旧版单状态字段；v0.5.1 起仅用于兼容历史消费者。"""
 
     CANDIDATE = "candidate"
     LEAN = "lean"
     NO_EDGE = "no_edge"
     ABSTAIN = "abstain"
+
+
+class DirectionState(str, Enum):
+    """概率方向的清晰程度，与赔率价值判断相互独立。"""
+
+    STRONG = "strong"
+    MODERATE = "moderate"
+    SLIGHT = "slight"
+    UNAVAILABLE = "unavailable"
+
+
+class ValueState(str, Enum):
+    """目标价格的价值状态；未独立验证不等于整场没有方向。"""
+
+    CANDIDATE = "candidate"
+    WATCH = "watch"
+    NO_EDGE = "no_edge"
+    UNVERIFIED = "unverified"
+    UNAVAILABLE = "unavailable"
 
 
 @dataclass(frozen=True)
@@ -285,6 +304,12 @@ class MatchPrediction:
     official_market_probs: Probability3 | None = None
     analysis_mode: str = "prior_only"
     calibrated_markets: tuple[str, ...] = ()
+    direction_state: DirectionState | str = DirectionState.UNAVAILABLE
+    direction_reason: str = ""
+    direction_margin: float = 0.0
+    value_state: ValueState | str = ValueState.UNAVAILABLE
+    value_reason: str = ""
+    # 兼容 v0.5.0 及更早的消费者；新版报告使用 direction_state/value_state。
     decision_state: DecisionState | str = DecisionState.ABSTAIN
     decision_reason: str = ""
     uncertainty: float = 1.0
@@ -319,6 +344,8 @@ class BacktestSummary:
     drawdown_curve: tuple[float, ...] = ()
     coverage: float = 0.0
     decision_counts: tuple[dict[str, str | int], ...] = ()
+    direction_counts: tuple[dict[str, str | int], ...] = ()
+    value_counts: tuple[dict[str, str | int], ...] = ()
 
 
 @dataclass(frozen=True)
@@ -334,7 +361,7 @@ class DailyReport:
     model_version: str = "unregistered"
     model_trained_until: str | None = None
     calibration_status: str = "unavailable"
-    schema_version: str = "2.0"
+    schema_version: str = "2.1"
 
 
 def to_dict(value: Any) -> Any:

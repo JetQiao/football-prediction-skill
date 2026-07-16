@@ -8,6 +8,7 @@ import platform
 import shutil
 import sys
 import webbrowser
+from collections import Counter
 from dataclasses import replace
 from datetime import date, datetime, timezone
 from pathlib import Path
@@ -162,10 +163,21 @@ def command_daily(args: argparse.Namespace) -> int:
     _open_report(html_path, disabled=args.no_open)
     print(f"已生成报告：{html_path}")
     print(f"预测数据：{json_path}")
+    direction_counts = Counter(
+        getattr(prediction.direction_state, "value", prediction.direction_state)
+        for prediction in report.predictions
+    )
+    value_counts = Counter(
+        getattr(prediction.value_state, "value", prediction.value_state)
+        for prediction in report.predictions
+    )
     print(
-        f"场次 {len(report.predictions)} · 候选价值 "
-        f"{sum(getattr(p.decision_state, 'value', p.decision_state) == 'candidate' for p in report.predictions)} · "
-        f"弃权 {sum(getattr(p.decision_state, 'value', p.decision_state) == 'abstain' for p in report.predictions)}"
+        f"场次 {len(report.predictions)} · "
+        f"明确方向 {direction_counts['strong']} · "
+        f"中等方向 {direction_counts['moderate']} · "
+        f"轻微方向 {direction_counts['slight']} · "
+        f"价值候选 {value_counts['candidate']} · "
+        f"数据不可用 {direction_counts['unavailable']}"
     )
     return 0
 

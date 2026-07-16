@@ -67,6 +67,8 @@ def evaluate_daily_files(prediction_file: Path, results_file: Path) -> dict[str,
                     actual,
                     odds,
                     decision_state=row.get("decision_state"),
+                    direction_state=row.get("direction_state"),
+                    value_state=row.get("value_state"),
                     target_used_as_signal=bool(row.get("target_used_as_signal", False)),
                 ),
                 {

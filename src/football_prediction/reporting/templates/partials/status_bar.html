@@ -8,7 +8,7 @@
       {% if report.backtest %}
         使用事件时间滚动回放，模型、融合和校准只读取当前比赛之前的数据。
       {% else %}
-        先比较校准概率、公平赔率与目标竞彩 SP；数据不足或价格参与概率时自动弃权。
+        先输出概率方向，再独立判断目标价格价值；缺少独立数据时保留方向，并明确标记价值未验证。
       {% endif %}
     </p>
   </div>
@@ -29,10 +29,11 @@
     {% else %}
       <div class="kpi-grid">
         <article><span>全部场次</span><strong>{{ cards|length }}</strong></article>
-        <article class="positive"><span>候选价值</span><strong>{{ counts.candidate }}</strong></article>
-        <article><span>无价格优势</span><strong>{{ counts.no_edge }}</strong></article>
-        <article class="warning"><span>弃权</span><strong>{{ counts.abstain }}</strong></article>
-        <article><span>完整数据</span><strong>{{ counts.complete }}</strong></article>
+        <article class="positive"><span>明确方向</span><strong>{{ counts.direction_strong }}</strong></article>
+        <article><span>中等方向</span><strong>{{ counts.direction_moderate }}</strong></article>
+        <article><span>轻微方向</span><strong>{{ counts.direction_slight }}</strong></article>
+        <article class="value"><span>价值候选</span><strong>{{ counts.value_candidate }}</strong></article>
+        <article class="warning"><span>数据不可用</span><strong>{{ counts.direction_unavailable }}</strong></article>
       </div>
     {% endif %}
   </div>

@@ -1,7 +1,7 @@
 {
   "name": "football-prediction-skill",
-  "version": "0.5.0",
-  "description": "事件时间可追溯的竞彩足球概率预测、模型注册、回测与离线 HTML Skill",
+  "version": "0.5.1",
+  "description": "分离方向与价值、事件时间可追溯的竞彩足球概率预测、回测与离线 HTML Skill",
   "type": "module",
   "bin": {
     "football-prediction-skill": "./bin/skill-cli.mjs",

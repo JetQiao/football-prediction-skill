@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.5.1 - 2026-07-16
+
+- 将原有单一决策状态拆成“方向判断 + 价值判断”：有可用概率时始终展示主胜/平局/客胜倾向，不再因缺少独立价值验证而整场标记为弃权。
+- 新增 `strong / moderate / slight / unavailable` 四档方向状态，以及 `candidate / watch / no_edge / unverified / unavailable` 五档价值状态。
+- 目标竞彩多玩法共识现在可以用于方向研究，但继续禁止使用同一价格循环证明价值；兼容保留旧版 `decision_state` 字段。
+- 报告重构方向与价值双列、双卡详情、组合筛选和移动端布局，并补充真实 10 场赛单回归：5 场明确、4 场中等、1 场轻微、0 场方向不可用。
+- 每日报告协议升级至 `2.1`，manifest 与回测新增方向/价值状态计数；CLI 同步输出方向强度和价值候选数量。
+
 ## 0.5.0 - 2026-07-16
 
 - 新增 DuckDB 目录与 Parquet 不可变赛前快照，完整记录 `as_of/observed_at/source_event_id/payload_hash/snapshot_id`。

@@ -108,4 +108,16 @@
 }
 ```
 
+## 每日预测输出
+
+v0.5.1 的每日预测协议为 `2.1`。每场比赛必须分别保留：
+
+- `direction_state`：`strong / moderate / slight / unavailable`。
+- `direction_reason` 与 `direction_margin`。
+- `value_state`：`candidate / watch / no_edge / unverified / unavailable`。
+- `value_reason`。
+- 兼容旧消费者的 `decision_state`，但不得用它覆盖新版双轨结论。
+
+缺少独立参考市场或统计模型时，只把价值标记为 `unverified`；若官方多玩法仍能形成有效概率，不得把方向改成 `unavailable`。
+
 时间越界、赔率角色错误、源场次数不一致和重复阵容事实会终止处理，不做静默修正。

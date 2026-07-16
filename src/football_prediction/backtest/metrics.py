@@ -9,7 +9,15 @@ from typing import Sequence
 import numpy as np
 from scipy.optimize import minimize
 
-from ..domain import BacktestSummary, DecisionState, Outcome, Probability3, ThreeWayOdds
+from ..domain import (
+    BacktestSummary,
+    DecisionState,
+    DirectionState,
+    Outcome,
+    Probability3,
+    ThreeWayOdds,
+    ValueState,
+)
 from ..modeling.odds import assess_value, remove_vig
 
 
@@ -20,6 +28,8 @@ class BacktestObservation:
     offered_odds: ThreeWayOdds | None = None
     value_threshold: float = 0.05
     decision_state: DecisionState | str | None = None
+    direction_state: DirectionState | str | None = None
+    value_state: ValueState | str | None = None
     target_used_as_signal: bool = False
     devig_method: str = "multiplicative"
 
@@ -85,6 +95,8 @@ def evaluate(observations: Sequence[BacktestObservation]) -> BacktestSummary:
     confidences: list[float] = []
     confidence_hits: list[int] = []
     decision_counts: dict[str, int] = {}
+    direction_counts: dict[str, int] = {}
+    value_counts: dict[str, int] = {}
 
     for row in observations:
         predicted = row.probabilities.best()
@@ -114,6 +126,18 @@ def evaluate(observations: Sequence[BacktestObservation]) -> BacktestSummary:
             else str(row.decision_state or "unclassified")
         )
         decision_counts[raw_state] = decision_counts.get(raw_state, 0) + 1
+        raw_direction = (
+            row.direction_state.value
+            if isinstance(row.direction_state, DirectionState)
+            else str(row.direction_state or "unclassified")
+        )
+        raw_value = (
+            row.value_state.value
+            if isinstance(row.value_state, ValueState)
+            else str(row.value_state or "unclassified")
+        )
+        direction_counts[raw_direction] = direction_counts.get(raw_direction, 0) + 1
+        value_counts[raw_value] = value_counts.get(raw_value, 0) + 1
 
         if row.offered_odds:
             baseline = remove_vig(row.offered_odds, method=row.devig_method)
@@ -133,7 +157,11 @@ def evaluate(observations: Sequence[BacktestObservation]) -> BacktestSummary:
                 threshold=row.value_threshold,
                 devig_method=row.devig_method,
             )
-            eligible_state = row.decision_state is None or raw_state == DecisionState.CANDIDATE.value
+            eligible_state = (
+                raw_value == ValueState.CANDIDATE.value
+                if row.value_state is not None
+                else row.decision_state is None or raw_state == DecisionState.CANDIDATE.value
+            )
             if eligible_state and not row.target_used_as_signal and value.flag == "value":
                 bets += 1
                 profit = value.odds - 1 if value.pick == row.actual else -1
@@ -183,5 +211,13 @@ def evaluate(observations: Sequence[BacktestObservation]) -> BacktestSummary:
         decision_counts=tuple(
             {"state": state, "count": count}
             for state, count in sorted(decision_counts.items())
+        ),
+        direction_counts=tuple(
+            {"state": state, "count": count}
+            for state, count in sorted(direction_counts.items())
+        ),
+        value_counts=tuple(
+            {"state": state, "count": count}
+            for state, count in sorted(value_counts.items())
         ),
     )

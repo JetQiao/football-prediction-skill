@@ -40,11 +40,18 @@ def _weighted(rows: list[dict], key: str, *, weight_key: str = "matches") -> flo
 def aggregate(rows: list[dict]) -> dict:
     matches = sum(int(row["matches"]) for row in rows)
     bets = sum(int(row["bets"]) for row in rows)
-    decisions: dict[str, int] = {}
-    for row in rows:
-        for item in row.get("decision_counts", []):
-            state = str(item["state"])
-            decisions[state] = decisions.get(state, 0) + int(item["count"])
+
+    def aggregate_counts(field: str) -> list[dict[str, str | int]]:
+        counts: dict[str, int] = {}
+        for row in rows:
+            for item in row.get(field, []):
+                state = str(item["state"])
+                counts[state] = counts.get(state, 0) + int(item["count"])
+        return [
+            {"state": state, "count": count}
+            for state, count in sorted(counts.items())
+        ]
+
     return {
         "files": len(rows),
         "matches": matches,
@@ -64,10 +71,9 @@ def aggregate(rows: list[dict]) -> dict:
             else 0.0
         ),
         "max_drawdown": max((float(row["max_drawdown"]) for row in rows), default=0.0),
-        "decision_counts": [
-            {"state": state, "count": count}
-            for state, count in sorted(decisions.items())
-        ],
+        "decision_counts": aggregate_counts("decision_counts"),
+        "direction_counts": aggregate_counts("direction_counts"),
+        "value_counts": aggregate_counts("value_counts"),
     }
 
 

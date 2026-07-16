@@ -11,14 +11,31 @@
       </button>
     </header>
 
-    <div class="decision-summary state-{{ c.decision_state }}">
-      <div><span>决策状态</span><strong>{{ c.decision_label }}</strong></div>
-      <p>{{ c.decision_reason }}</p>
-      <dl>
-        <div><dt>方向</dt><dd>{% if c.decision_state == "abstain" %}不输出{% else %}{{ c.recommended_label }}{% endif %}</dd></div>
-        <div><dt>不确定性</dt><dd>{{ c.uncertainty|pct0 }}</dd></div>
-        <div><dt>模型</dt><dd>{{ c.model_version }}</dd></div>
-      </dl>
+    <div class="assessment-summary">
+      <article class="assessment-card direction-{{ c.direction_state }}">
+        <header>
+          <span>方向判断</span>
+          <strong>{{ c.direction_label }}</strong>
+        </header>
+        <p>{{ c.direction_reason }}</p>
+        <dl>
+          <div><dt>最高概率</dt><dd>{% if c.direction_state == "unavailable" %}—{% else %}{{ c.direction_probability|pct }}{% endif %}</dd></div>
+          <div><dt>领先幅度</dt><dd>{% if c.direction_state == "unavailable" %}—{% else %}{{ c.direction_margin|pct }}{% endif %}</dd></div>
+          <div><dt>不确定性</dt><dd>{{ c.uncertainty|pct0 }}</dd></div>
+        </dl>
+      </article>
+      <article class="assessment-card value-{{ c.value_state }}">
+        <header>
+          <span>价值判断</span>
+          <strong>{{ c.value_label }}</strong>
+        </header>
+        <p>{{ c.value_reason }}</p>
+        <dl>
+          <div><dt>比较方向</dt><dd>{{ c.value.pick_label if c.value else "—" }}</dd></div>
+          <div><dt>概率优势</dt><dd>{{ c.edge|signed_pct }}</dd></div>
+          <div><dt>长期期望</dt><dd>{{ c.expected_value|signed_pct }}</dd></div>
+        </dl>
+      </article>
     </div>
 
     <div class="dialog-tabs" role="tablist" aria-label="单场分析栏目">
@@ -33,10 +50,10 @@
         <h3>核心结论</h3>
         <p class="lead-copy">{{ c.summary }}</p>
         <div class="metric-cards">
+          <article><span>方向判断</span><strong>{{ c.direction_label }}</strong></article>
+          <article><span>价值判断</span><strong>{{ c.value_label }}</strong></article>
           <article><span>期望进球</span><strong>{{ c.xg_home|num }} : {{ c.xg_away|num }}</strong></article>
           <article><span>最可能比分</span><strong>{{ c.top_scores[0].label if c.top_scores else "—" }}</strong></article>
-          <article><span>概率优势</span><strong>{{ c.edge|signed_pct }}</strong></article>
-          <article><span>长期期望</span><strong>{{ c.expected_value|signed_pct }}</strong></article>
         </div>
         {% if c.warnings %}
         <div class="notice warning"><strong>风险与降级</strong><ul>{% for warning in c.warnings %}<li>{{ warning }}</li>{% endfor %}</ul></div>
@@ -111,7 +128,7 @@
           <div><dt>训练截止</dt><dd>{{ c.model_trained_until or "未注册" }}</dd></div>
           <div><dt>校准状态</dt><dd>{{ c.calibration_status }} / {{ c.calibration_sample_size }} 样本</dd></div>
           <div><dt>去水方法</dt><dd>{{ c.devig_method }}</dd></div>
-          <div><dt>目标价格参与概率</dt><dd>{{ "是（已弃权）" if c.target_used_as_signal else "否" }}</dd></div>
+          <div><dt>目标价格参与概率</dt><dd>{{ "是（价值未独立验证）" if c.target_used_as_signal else "否" }}</dd></div>
         </dl>
       </section>
     </div>

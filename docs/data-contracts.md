@@ -122,6 +122,24 @@
 }
 ```
 
+快照信封当前使用协议 `2.0`。每日预测产物从 v0.5.1 起使用报告协议 `2.1`，每场同时包含方向与价值状态：
+
+```json
+{
+  "schema_version": "2.1",
+  "predictions": [{
+    "direction_state": "strong",
+    "direction_reason": "竞彩市场概率明确偏向主胜：57.0%，领先第二结果 35.0%",
+    "direction_margin": 0.35,
+    "value_state": "unverified",
+    "value_reason": "方向来自目标竞彩市场共识，不能用同一价格独立验证价值",
+    "decision_state": "lean"
+  }]
+}
+```
+
+`decision_state` 是 v0.5.0 兼容字段；新消费者应优先读取 `direction_state` 和 `value_state`。
+
 ## 赛后比分
 
 ```json

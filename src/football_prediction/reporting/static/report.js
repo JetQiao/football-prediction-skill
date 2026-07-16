@@ -27,11 +27,18 @@
 
   function applyFilters() {
     const query = (search?.value || "").trim().toLowerCase();
+    const [filterDimension, filterValue] = stateFilter.includes(":")
+      ? stateFilter.split(":", 2)
+      : [null, null];
     let visible = 0;
     rows.forEach((row) => {
+      const stateMismatch = stateFilter !== "all" && (
+        (filterDimension === "direction" && row.dataset.direction !== filterValue) ||
+        (filterDimension === "value" && row.dataset.value !== filterValue)
+      );
       const hidden = Boolean(
         (league?.value && row.dataset.league !== league.value) ||
-        (stateFilter !== "all" && row.dataset.state !== stateFilter) ||
+        stateMismatch ||
         (query && !row.dataset.search.includes(query))
       );
       row.hidden = hidden;
@@ -44,6 +51,9 @@
     if (!rowsRoot || !sort) return;
     const key = sort.value;
     const ordered = [...rows].sort((left, right) => {
+      if (key === "direction") {
+        return Number(right.dataset.directionRank) - Number(left.dataset.directionRank);
+      }
       if (key === "edge") return Number(right.dataset.edge) - Number(left.dataset.edge);
       if (key === "confidence") return Number(right.dataset.confidence) - Number(left.dataset.confidence);
       return left.dataset.kickoff.localeCompare(right.dataset.kickoff);
