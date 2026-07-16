@@ -1,7 +1,7 @@
 {
   "name": "football-prediction-skill",
-  "version": "0.4.0",
-  "description": "竞彩足球概率预测、价值分析、回测与自包含 HTML 报告 Skill",
+  "version": "0.5.0",
+  "description": "事件时间可追溯的竞彩足球概率预测、模型注册、回测与离线 HTML Skill",
   "type": "module",
   "bin": {
     "football-prediction-skill": "./bin/skill-cli.mjs",
@@ -14,6 +14,9 @@
     "docs/assets/*.jpg",
     "src/football_prediction/**/*.py",
     "src/football_prediction/reporting/templates/*.html",
+    "src/football_prediction/reporting/templates/partials/*.html",
+    "src/football_prediction/reporting/static/*.css",
+    "src/football_prediction/reporting/static/*.js",
     "src/football_prediction/reporting/assets/flags/*.png",
     "pyproject.toml",
     "README.md",

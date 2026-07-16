@@ -28,12 +28,15 @@ class LocalFeatureProvider:
         return {
             name_key(row["team"]): TeamFeatures(
                 team=row["team"],
+                team_id=str(row["team_id"]) if row.get("team_id") is not None else None,
                 elo=float(row["elo"]) if row.get("elo") is not None else None,
                 xg_for=float(row["xg_for"]) if row.get("xg_for") is not None else None,
                 xg_against=float(row["xg_against"]) if row.get("xg_against") is not None else None,
                 form_index=float(row.get("form_index", 0)),
                 sample_size=int(row.get("sample_size", 0)),
                 source=row.get("source", "local-json"),
+                observed_at=row.get("observed_at", ""),
+                competition_id=row.get("competition_id"),
             )
             for row in iterable
         }
@@ -61,7 +64,12 @@ class ClubEloProvider:
             if not team or not elo:
                 continue
             canonical = self.resolver.resolve(team)
-            result[name_key(canonical)] = TeamFeatures(team=canonical, elo=float(elo), source="clubelo")
+            result[name_key(canonical)] = TeamFeatures(
+                team=canonical,
+                elo=float(elo),
+                source="clubelo",
+                observed_at=day.isoformat(),
+            )
         return result
 
 

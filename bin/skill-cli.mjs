@@ -27,7 +27,13 @@ const runtimeEntry = join(runtimePackage, "__main__.py");
 const pythonInVenv = process.platform === "win32" ? join(venv, "Scripts", "python.exe") : join(venv, "bin", "python");
 const args = process.argv.slice(2);
 const command = args[0] || "install";
-const runtimeDependencies = ["Jinja2>=3.1,<4", "numpy>=1.26,<3", "platformdirs>=4.2,<5", "scipy>=1.12,<2"];
+const runtimeDependencies = [
+  "duckdb>=1.3,<2",
+  "Jinja2>=3.1,<4",
+  "numpy>=1.26,<3",
+  "platformdirs>=4.2,<5",
+  "scipy>=1.12,<2",
+];
 
 function run(program, parameters, options = {}) {
   const result = spawnSync(program, parameters, { stdio: "inherit", ...options });
@@ -57,7 +63,7 @@ function dependencyIndexes() {
 function dependenciesReady() {
   const probe = spawnSync(
     pythonInVenv,
-    ["-c", "import jinja2, numpy, platformdirs, scipy"],
+    ["-c", "import duckdb, jinja2, numpy, platformdirs, scipy"],
     { stdio: "ignore" },
   );
   return probe.status === 0;

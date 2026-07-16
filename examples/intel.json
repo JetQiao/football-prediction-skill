@@ -4,8 +4,19 @@
       "match_id": "demo-001",
       "completeness": 0.75,
       "missing": ["客队最终首发"],
-      "evidences": [
-        {"title": "演示：主队官方确认核心中场复出", "url": "https://example.com/demo-official", "published_at": "2026-06-29T09:00:00+08:00", "credibility": 0.95, "impact": 0.03, "outcome": "home", "note": "仅用于离线演示"}
+      "facts": [
+        {
+          "event_type": "player_unavailable",
+          "team": "北境联",
+          "player": "演示前锋",
+          "status": "confirmed_out",
+          "position": "ST",
+          "expected_minutes_delta": -70,
+          "source_url": "https://example.com/demo-official",
+          "observed_at": "2026-06-29T09:00:00+08:00",
+          "credibility": 0.95,
+          "reason": "仅用于离线演示"
+        }
       ]
     }
   ]

@@ -1,5 +1,14 @@
 {
   "matches": [
-    {"home": "海港城", "away": "北境联", "home_odds": 1.82, "draw_odds": 3.65, "away_odds": 4.4, "source": "demo-pinnacle", "updated_at": "2026-06-29T12:00:00+08:00"}
+    {
+      "home": "海港城",
+      "away": "北境联",
+      "home_odds": 1.82,
+      "draw_odds": 3.65,
+      "away_odds": 4.4,
+      "source": "demo-pinnacle",
+      "updated_at": "2026-06-29T12:00:00+08:00",
+      "role": "reference_market"
+    }
   ]
 }

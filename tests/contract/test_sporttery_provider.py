@@ -30,6 +30,30 @@ class SportteryProviderTests(unittest.TestCase):
         self.assertEqual(len(matches[0].sporttery_markets), 5)
         self.assertEqual(matches[0].market("crs").get("1:0").odds, 7.8)
 
+    def test_parse_api_ignores_invalid_optional_provider_fixture_id(self):
+        payload = {
+            "data": {
+                "matches": [
+                    {
+                        "matchId": "1",
+                        "businessDate": "2026-06-29",
+                        "matchNumStr": "周一001",
+                        "matchDate": "2026-06-29",
+                        "matchTime": "20:00:00",
+                        "league": {"abbName": "英超"},
+                        "home": {"abbName": "Arsenal"},
+                        "away": {"abbName": "Chelsea"},
+                        "providerFixtureId": "unknown",
+                        "markets": {},
+                    }
+                ]
+            }
+        }
+
+        matches = SportteryProvider.parse_sporttery_api(payload, "2026-06-29")
+
+        self.assertIsNone(matches[0].provider_fixture_id)
+
     def test_keeps_matches_when_had_is_not_on_sale(self):
         payload = {
             "value": {

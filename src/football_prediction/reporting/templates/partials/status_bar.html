@@ -1,0 +1,39 @@
+<section class="status-panel" aria-labelledby="reportTitle">
+  <div class="status-title">
+    <div>
+      <span class="eyebrow">{% if report.backtest %}模型回放{% else %}比赛日研究{% endif %}</span>
+      <h1 id="reportTitle">{{ report.business_date }}</h1>
+    </div>
+    <p>
+      {% if report.backtest %}
+        使用事件时间滚动回放，模型、融合和校准只读取当前比赛之前的数据。
+      {% else %}
+        先比较校准概率、公平赔率与目标竞彩 SP；数据不足或价格参与概率时自动弃权。
+      {% endif %}
+    </p>
+  </div>
+  <div class="status-metrics">
+    <dl class="model-strip">
+      <div><dt>预测截点</dt><dd>{{ report.as_of or "未记录" }}</dd></div>
+      <div><dt>模型版本</dt><dd>{{ report.model_version }}</dd></div>
+      <div><dt>训练截止</dt><dd>{{ report.model_trained_until or "未注册" }}</dd></div>
+      <div><dt>校准状态</dt><dd class="calibration-{{ report.calibration_status }}">{{ report.calibration_status }}</dd></div>
+    </dl>
+    {% if report.backtest %}
+      <div class="kpi-grid backtest-kpis">
+        <article><span>样本</span><strong>{{ report.backtest.matches }}</strong></article>
+        <article><span>Brier</span><strong>{{ report.backtest.brier|num }}</strong></article>
+        <article><span>Log-loss</span><strong>{{ report.backtest.log_loss|num }}</strong></article>
+        <article><span>ECE</span><strong>{{ report.backtest.ece|num }}</strong></article>
+      </div>
+    {% else %}
+      <div class="kpi-grid">
+        <article><span>全部场次</span><strong>{{ cards|length }}</strong></article>
+        <article class="positive"><span>候选价值</span><strong>{{ counts.candidate }}</strong></article>
+        <article><span>无价格优势</span><strong>{{ counts.no_edge }}</strong></article>
+        <article class="warning"><span>弃权</span><strong>{{ counts.abstain }}</strong></article>
+        <article><span>完整数据</span><strong>{{ counts.complete }}</strong></article>
+      </div>
+    {% endif %}
+  </div>
+</section>

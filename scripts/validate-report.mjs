@@ -20,7 +20,11 @@ const externalAssets = [
   ...html.matchAll(/<link[^>]+href=["']https?:/gi),
 ];
 if (externalAssets.length) throw new Error("报告包含外部脚本或样式资源");
-if (!html.includes('@media(max-width:560px)')) throw new Error("报告缺少移动端断点");
+if (!/@media\s*\(max-width:\s*(?:420|560|760)px\)/.test(html)) {
+  throw new Error("报告缺少移动端断点");
+}
 if (!html.includes('id="matchList"')) throw new Error("报告缺少赛单容器");
+if (!html.includes('data-tab="prices"')) throw new Error("报告缺少概率与价格页签");
+if (!html.includes('class="match-dialog"')) throw new Error("报告缺少单场详情抽屉");
 
 console.log("HTML 内联 JSON、JavaScript、离线资源和响应式结构检查通过");

@@ -1,172 +1,283 @@
 # football-prediction-skill
 
-一个面向 Codex、Claude Code 与命令行的竞彩足球智能分析 Skill：按日期拉取赛单，用 Dixon-Coles、市场概率和有来源情报生成可解释预测，并输出可离线打开的深色 HTML 报告。
+[![CI](https://github.com/JetQiao/football-prediction-skill/actions/workflows/ci.yml/badge.svg)](https://github.com/JetQiao/football-prediction-skill/actions/workflows/ci.yml)
+[![GitHub Release](https://img.shields.io/github/v/release/JetQiao/football-prediction-skill)](https://github.com/JetQiao/football-prediction-skill/releases)
+[![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
+[![Node.js 18+](https://img.shields.io/badge/Node.js-18%2B-339933?logo=nodedotjs&logoColor=white)](https://nodejs.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-2ea44f.svg)](LICENSE)
+
+面向 Codex、Claude Code 与命令行的竞彩足球概率研究 Skill。它把竞彩赛单、球队特征、独立参考市场、目标竞彩价格、阵容事实、模型版本和历史回放放进同一条事件时间管线，最终生成可追溯、可离线打开的深色 HTML 研究报告。
 
 > 只做赛前概率研究与回测，不代客操作、不提供下注通道、不承诺命中率或收益。理性购彩，未成年人禁止购彩。
 
-## 能力
+## 为什么是 v0.5
 
-- 按日期覆盖官方赛单全部场次；普通胜平负未开售、仅让球在售或玩法待开售均不会漏场。
-- Dixon-Coles 低比分修正、时间衰减拟合、Elo/xG 特征与市场对数融合。
-- A/B 情报分层；每条 A 级情报必须包含来源、发布时间、可信度和有界影响。
-- 价值判断、推荐比分、置信度、信息缺口与逐场解释。
-- 完整解析五类官方竞彩 SP，并联合校准为同一个比赛级比分矩阵，避免各玩法互相矛盾。
-- 世界杯数据台风格的自包含报告：首屏结论、直观概率条、玩法页签、术语解释和移动端适配。
-- 防未来数据泄漏的滚动回测：命中率、Brier、log-loss、ROI、最大回撤和可靠性曲线。
-- 每日预测赛后结算：按联赛、置信度和分析模式追踪真实表现，未完赛场次自动保留。
-- 小组赛蒙特卡洛排名、可配置淘汰赛对阵与“避强路径”启发式。
-- 自包含 HTML：内联数据、CSS、JavaScript、SVG，离线打开不发网络请求。
+v0.5 的重点不是把界面包装得更像“预测神器”，而是让每个概率都能回答四个问题：
 
-## 真实数据报告
+1. 这条数据在预测截点时是否已经可用？
+2. 概率是否独立于正在比较的竞彩价格？
+3. 模型是否通过样本外校准和晋级门槛？
+4. 证据不足时，系统是否愿意明确弃权？
 
-以下截图使用 2026-06-29 竞彩数据源快照生成，展示真实球队、官方 SP、模型概率与价值分析；并非演示球队数据。
+因此，本版本完成了以下重构：
 
-<p align="center">
-  <img src="docs/assets/real-data-overview.jpg" alt="竞彩足球真实数据报告首页" width="100%">
-</p>
+- 日常预测与历史回放共用同一个 `PredictionPipeline`。
+- DuckDB 管理快照目录，Parquet/JSON 保存不可变赛前数据。
+- `reference_market / target_market / benchmark_market` 角色强隔离。
+- Dixon-Coles、去水方法、融合器和温度校准进入本地模型注册表。
+- 只有样本外 Brier、Log-loss、RPS 与 ECE 通过门槛的模型才能晋级。
+- `candidate / lean / no_edge / abstain` 成为一等决策状态。
+- 报告重构为高密度概率与价格工作台，桌面端使用赛单表和详情抽屉，移动端使用紧凑比赛卡。
 
-<details>
-  <summary><strong>展开查看五类玩法详情</strong></summary>
-  <br>
-  <p align="center">
-    <img src="docs/assets/real-data-markets.jpg" alt="竞彩足球胜平负、让球、比分、总进球与半全场详情" width="100%">
-  </p>
-</details>
+## 60 秒开始
 
-## 安装
+需要 Node.js 18+ 和 Python 3.10+。
 
-需要 Node.js 18+ 和 Python 3.10+：
+安装 Skill 与独立运行环境：
 
 ```bash
-npx github:JetQiao/football-prediction-skill install
+npx -y github:JetQiao/football-prediction-skill install
 ```
 
-安装器会同时安装 Skill、私有 Python 运行环境和全局 `football-predict` 命令。它不会通过 pip 构建本项目本身，避免额外下载 `setuptools/wheel`；Python 运行依赖会在 PyPI、清华和阿里云镜像间自动降级。网络受限时可显式指定镜像：
+安装完成后先运行离线演示：
 
 ```bash
-FOOTBALL_PIP_INDEX_URL=https://pypi.tuna.tsinghua.edu.cn/simple \
-  npx -y github:JetQiao/football-prediction-skill#v0.3.0 install
+football-predict daily \
+  --date today \
+  --demo \
+  --no-open \
+  --out ./reports/demo
 ```
 
-安装完成后直接使用：
+生成真实日期的竞彩报告：
 
 ```bash
-football-predict doctor
 football-predict daily --date today
 ```
 
-如果安装完成后当前 zsh 仍保留旧的“command not found”缓存，执行一次 `rehash` 即可。
-
-也可以只安装 Python CLI：
+未注册全局命令时，可以直接使用：
 
 ```bash
-python3 -m venv .venv
-. .venv/bin/activate
-pip install .
+npx -y github:JetQiao/football-prediction-skill \
+  daily --date today
 ```
 
-## 快速体验
+在 Codex 或 Claude Code 中也可以直接说：
 
-先用完全离线的虚构数据验证运行环境：
-
-```bash
-npx -y github:JetQiao/football-prediction-skill demo --no-open --out ./reports/demo
+```text
+使用 football-prediction-skill 按严格赛前截点分析今天的竞彩足球，
+区分参考市场与目标竞彩，生成完整 HTML 报告。
 ```
 
-生成真实日期报告：
+## 核心能力
 
-```bash
-npx -y github:JetQiao/football-prediction-skill daily --date today
+- 完整保留官方赛单：HAD 未开售、仅 HHAD 在售或玩法暂未开放都不会漏场。
+- 动态 Dixon-Coles、Elo/xG、Power/Shin 去水、样本外融合与概率校准。
+- 自动尝试 ClubElo；可选接入 The Odds API 和 API-Football。
+- 结构化阵容事实映射为有界 xG 调整，不让智能体直接填写胜平负影响。
+- 统一生成胜平负、公平赔率、比分矩阵、让球、总进球和半全场推演。
+- Brier、Log-loss、RPS、ECE、校准斜率、ROI、覆盖率和最大回撤评估。
+- 小组赛蒙特卡洛排名与赛事推演。
+- 自包含 HTML：CSS、JavaScript、SVG 与数据全部内联，离线打开不发网络请求。
+
+## 决策状态
+
+| 状态 | 含义 |
+|---|---|
+| `candidate` | 独立概率、校准状态和价格优势全部通过门槛 |
+| `lean` | 有概率方向，但价格、校准或优势强度不足 |
+| `no_edge` | 目标竞彩价格没有正向独立优势 |
+| `abstain` | 数据不足、未来数据风险、循环价值或不确定性过高 |
+
+“没有优势”和“弃权”是正式结论，不是运行失败。
+
+## 事件时间与市场隔离
+
+进入模型的赛前数据必须满足：
+
+```text
+observed_at <= as_of < kickoff_at
+model.trained_until < business_date
 ```
 
-下面示例使用全局 `football-predict`；未全局安装时，把它替换为 `npx -y github:JetQiao/football-prediction-skill`。
+三类市场的职责严格分离：
 
-完整的智能体情报工作流：
+| 市场角色 | 用途 | 示例 |
+|---|---|---|
+| `reference_market` | 预测先验或融合输入 | Pinnacle、可靠多公司共识 |
+| `target_market` | 价值比较对象 | 竞彩 HAD/HHAD SP |
+| `benchmark_market` | 历史概率评估或 CLV | 同截点市场、收盘市场 |
+
+目标竞彩价格一旦参与概率形成，同一场比赛会自动禁止独立价值候选。
+
+## 架构
+
+```mermaid
+flowchart LR
+    A["竞彩赛单与目标 SP"] --> S["不可变赛前快照"]
+    B["独立参考市场"] --> S
+    C["Elo / xG / 历史赛果"] --> S
+    D["阵容与有来源情报"] --> S
+    S --> T["事件时间与身份校验"]
+    R["模型注册表"] --> P["PredictionPipeline"]
+    T --> P
+    P --> M["Dixon-Coles + OOF 融合 + 校准"]
+    M --> G["四态决策与价值门禁"]
+    G --> O["JSON / Manifest / 离线 HTML"]
+    H["历史快照与赛果"] --> E["同管线回放"]
+    E --> V["指标评估与模型晋级"]
+    V --> R
+```
+
+详细模块边界见 [架构文档](docs/architecture.md)，公共输入协议见 [数据契约](docs/data-contracts.md)。
+
+## 推荐每日工作流
 
 ```bash
-# 1. 拉赛单并生成 A 级情报队列
-football-predict prepare --date today --out ./work/today
+# 1. 获取赛单、生成情报队列并写入不可变快照
+football-predict sync \
+  --date today \
+  --as-of now \
+  --out ./work/today
 
-# 2. 智能体根据 intel_queue_*.json 搜索赛前信息，生成 intel.json
-
-# 3. 校验并生成最终报告
+# 2. 对 A 级场补充有来源的结构化 facts[]
 football-predict validate-intel ./work/today/intel.json
+
+# 3. 在同一预测截点生成报告
 football-predict daily \
   --date today \
+  --as-of now \
   --input ./work/today/matches_YYYY-MM-DD.json \
   --intel ./work/today/intel.json
 ```
 
-每次日常运行生成三个可追溯产物：
+历史日期没有显式提供 `--as-of` 时，系统会使用最早比赛前 90 分钟作为安全截点。截点前已经开赛的比赛只保留原始快照，不生成伪赛前预测。
 
-- `prediction_YYYY-MM-DD.json`：机器可读预测快照。
-- `report_YYYY-MM-DD.html`：最终离线报告。
-- `manifest_<run_id>.json`：数据源、参数、警告和产物路径。
+## 模型生命周期
 
-赛后使用通用比分文件评估当日预测，无需为新日期修改代码：
+训练 challenger：
 
 ```bash
-football-predict evaluate-daily \
-  ./prediction_YYYY-MM-DD.json \
-  ./results_YYYY-MM-DD.json
+football-predict train ./E0.csv \
+  --competition 英超 \
+  --alias "Premier League"
 ```
 
-赛果格式支持 `match_id + score`，也支持 `match_no + home_goals/away_goals`，详见 [`docs/data-contracts.md`](docs/data-contracts.md)。
-
-生成五大联赛 xG + ClubElo 特征快照（需安装可选依赖）：
+查看模型注册表：
 
 ```bash
-pip install 'football-prediction-skill[xg]'
-football-predict fetch-features \
-  --league ENG-Premier League --season 2025 \
-  --out ./features.json
+football-predict models
 ```
 
-## 数据增强
+通过门槛后晋级：
 
-不配置 Key 也能运行。以下能力按需启用：
+```bash
+football-predict train ./E0.csv \
+  --competition 英超 \
+  --promote
+```
+
+未通过样本外门槛时，命令会拒绝晋级。`--force-promote` 只用于明确的研究实验，不应作为生产默认设置。
+
+## 回测与当前结果
+
+生产概率回放：
+
+```bash
+football-predict backtest ./E0.csv \
+  --pipeline production \
+  --no-open
+```
+
+独立价值策略回放：
+
+```bash
+football-predict backtest ./E0.csv \
+  --pipeline independent-value \
+  --no-open
+```
+
+批量运行多联赛赛季：
+
+```bash
+python scripts/run-benchmark.py /path/to/csv-directory \
+  --pipeline production \
+  --out /tmp/football-benchmark.json
+```
+
+v0.5 使用 2023/24、2024/25、2025/26 五大联赛 15 组 CSV 完成首轮回放：
+
+| 管线 | 样本 | Brier | Log-loss | RPS | ECE | 候选 |
+|---|---:|---:|---:|---:|---:|---:|
+| v0.5 production | 3,436 | 0.1950 | 0.9818 | 0.1968 | 0.0582 | 0 |
+| v0.5 independent-value | 3,436 | 0.2002 | 1.0053 | 0.2046 | 0.0564 | 0 |
+| 市场基线 | 3,436 | 0.1923 | 0.9696 | 0.1942 | — | — |
+
+相比 v0.4 审计的 Brier `0.2001`、Log-loss `1.0057`，生产管线已有改善，但目前仍未稳定击败市场基线。因此系统不会制造候选下注，也不会把“比旧版好”描述成“已经存在稳定超额”。
+
+审计和设计记录：
+
+- [v0.5 基线审计](docs/v0.5-baseline-audit.md)
+- [v0.5 准确度架构](docs/v0.5-accuracy-architecture.md)
+- [v0.5 报告设计与验收](docs/v0.5-report-design.md)
+
+## 可选数据源
 
 | 环境变量 | 用途 |
 |---|---|
-| `SPORTTERY_API_URL` | 本地或自部署 SportteryAPI，推荐优先使用 |
+| `SPORTTERY_API_URL` | 本地或自部署 SportteryAPI |
 | `SPORTTERY_API_KEY` | SportteryAPI 可选鉴权 |
-| `API_FOOTBALL_KEY` | 结构化伤病和阵容 |
-| `THE_ODDS_API_KEY` | 实时市场赔率；免费降级模式不需要 |
+| `THE_ODDS_API_KEY` | 独立参考市场 |
+| `API_FOOTBALL_KEY` | 结构化伤病；赛单需要提供 `provider_fixture_id` |
+| `FOOTBALL_AUTO_CLUBELO` | 无本地特征时自动尝试 ClubElo，默认 `true` |
 
-SportteryAPI 的全球 Worker 可能受竞彩上游地域限制。本地 MCP/REST 或本地官方接口通常更可靠。详见 [SportteryAPI](https://github.com/Johnserf-Seed/SportteryAPI)。
+没有配置付费数据源也可以运行，但报告会明确标记数据降级，并提高弃权概率。
 
-## 输入协议
+## CLI 索引
 
-球队特征、市场快照和情报 JSON 示例位于 [`examples/`](examples/)。字段契约见 [`docs/data-contracts.md`](docs/data-contracts.md)。
+| 命令 | 用途 |
+|---|---|
+| `doctor [--strict]` | 检查依赖、数据源和生产模型 |
+| `sync / prepare` | 获取赛单、生成情报队列并写入快照 |
+| `daily` | 生成每日预测 JSON、manifest 与 HTML |
+| `validate-intel` | 校验来源、时间和重复阵容事实 |
+| `fetch-features` | 生成 ClubElo/xG 特征快照 |
+| `train` | 训练 Dixon-Coles、融合器和校准器 |
+| `models` | 查看或晋级模型注册表 |
+| `snapshots` | 查看本地不可变快照目录 |
+| `backtest` | 使用生产管线做滚动历史回放 |
+| `evaluate-daily` | 用赛后比分评估已保存预测 |
+| `tournament` | 运行小组赛蒙特卡洛模拟 |
 
-## 回测
+运行 `football-predict <command> --help` 查看完整参数。
 
-```bash
-football-predict backtest ./E0.csv --min-train 120 --window 600
-```
+## 产物
 
-历史数据可从 [football-data.co.uk](https://www.football-data.co.uk/data.php) 获取。回测按时间排序，只用当前比赛之前的数据拟合；收盘赔率只能用于历史基准，不能提前注入日常预测。该站提示 2025-07 之后的 Pinnacle 数据可能系统性滞后，本项目对这些赛季优先采用市场平均收盘赔率。
+每日运行会生成：
 
-## 开发
+- `prediction_YYYY-MM-DD.json`：机器可读预测与决策状态。
+- `report_YYYY-MM-DD.html`：自包含离线研究报告。
+- `manifest_<run_id>.json`：截点、快照、模型、参数、警告和产物路径。
+- DuckDB 目录与 Parquet/JSON 快照：不可变赛前数据。
+
+`run_id` 由预测截点、快照 ID、模型版本和关键参数确定；相同输入会得到相同运行标识。
+
+## 从源码开发
 
 ```bash
 python3 -m venv .venv
 . .venv/bin/activate
-pip install -e .
+pip install -e '.[dev]'
+
 python -m unittest discover -s tests -p 'test_*.py'
-python /path/to/skill-creator/scripts/quick_validate.py skill/football-prediction-skill
+ruff check src tests scripts
+node scripts/validate-report.mjs /path/to/report.html
+python /path/to/skill-creator/scripts/quick_validate.py \
+  skill/football-prediction-skill
 ```
 
-架构、Provider 边界和降级策略见 [`docs/architecture.md`](docs/architecture.md)。欢迎提交 Issue 与 Pull Request。
-
-## 支持项目
-
-<p align="center"><strong>如果觉得对您有帮助，请我喝杯啤酒吧 🍺</strong></p>
-
-<p align="center">
-  <img src="docs/assets/wechat-pay.jpg" alt="微信支付收款二维码" width="300">
-</p>
+发布记录见 [CHANGELOG](CHANGELOG.md)。Issue 和 Pull Request 欢迎提交。
 
 ## License
 
-MIT。第三方数据与服务受各自条款约束，详见 [`NOTICE`](NOTICE)。
+MIT。第三方数据与服务受各自条款约束，详见 [NOTICE](NOTICE)。

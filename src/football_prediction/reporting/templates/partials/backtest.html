@@ -1,0 +1,33 @@
+<section class="workspace backtest-workspace" aria-labelledby="backtestTitle">
+  <div class="section-heading"><div><span class="eyebrow">样本外评估</span><h2 id="backtestTitle">模型与市场基线</h2></div></div>
+  <div class="metric-cards backtest-metrics">
+    <article><span>命中率</span><strong>{{ report.backtest.accuracy|pct }}</strong></article>
+    <article><span>Brier / 市场</span><strong>{{ report.backtest.brier|num }} / {{ report.backtest.baseline_brier|num }}</strong></article>
+    <article><span>Log-loss / 市场</span><strong>{{ report.backtest.log_loss|num }} / {{ report.backtest.baseline_log_loss|num }}</strong></article>
+    <article><span>RPS / 市场</span><strong>{{ report.backtest.rps|num }} / {{ report.backtest.baseline_rps|num }}</strong></article>
+    <article><span>ECE</span><strong>{{ report.backtest.ece|num }}</strong></article>
+    <article><span>策略覆盖率</span><strong>{{ report.backtest.coverage|pct }}</strong></article>
+    <article><span>策略 ROI</span><strong>{{ report.backtest.roi|pct }}</strong></article>
+    <article><span>最大回撤</span><strong>{{ report.backtest.max_drawdown|pct }}</strong></article>
+  </div>
+  <div class="chart-grid">
+    <article class="chart-card">
+      <header><div><span class="eyebrow">收益与风险</span><h3>累计收益曲线</h3></div><small>初始资金 100 单位，纵轴为累计收益率</small></header>
+      <svg id="equityChart" class="chart" viewBox="0 0 820 280" role="img" aria-label="累计收益与回撤曲线"></svg>
+    </article>
+    <article class="chart-card">
+      <header><div><span class="eyebrow">概率校准</span><h3>可靠性曲线</h3></div><small>虚线为理想校准</small></header>
+      <svg id="reliabilityChart" class="chart" viewBox="0 0 820 280" role="img" aria-label="预测可靠性曲线"></svg>
+    </article>
+  </div>
+  <div class="backtest-tables">
+    <article>
+      <h3>可靠性数据</h3>
+      <table><thead><tr><th>概率区间</th><th>平均预测</th><th>实际命中</th><th>样本</th></tr></thead><tbody>{% for row in report.backtest.reliability %}<tr><td>{{ row.lower|pct0 }}–{{ row.upper|pct0 }}</td><td>{{ row.predicted|pct }}</td><td>{{ row.actual|pct }}</td><td>{{ row.count }}</td></tr>{% endfor %}</tbody></table>
+    </article>
+    <article>
+      <h3>决策覆盖</h3>
+      <table><thead><tr><th>状态</th><th>数量</th></tr></thead><tbody>{% for row in report.backtest.decision_counts %}<tr><td>{{ row.state }}</td><td>{{ row.count }}</td></tr>{% endfor %}</tbody></table>
+    </article>
+  </div>
+</section>
