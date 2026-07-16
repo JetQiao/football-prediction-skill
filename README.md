@@ -278,6 +278,16 @@ python /path/to/skill-creator/scripts/quick_validate.py \
 
 发布记录见 [CHANGELOG](CHANGELOG.md)。Issue 和 Pull Request 欢迎提交。
 
+## 支持项目
+
+如果这个项目帮你节省了研究或开发时间，欢迎请作者喝杯咖啡 ☕️。你的支持会用于持续维护数据管线、模型验证和报告体验。
+
+<p align="center">
+  <img src="docs/assets/wechat-pay.jpg" alt="微信收款码：请作者喝杯咖啡" width="280">
+</p>
+
+<p align="center"><sub>感谢支持，量力而行。</sub></p>
+
 ## License
 
 MIT。第三方数据与服务受各自条款约束，详见 [NOTICE](NOTICE)。
