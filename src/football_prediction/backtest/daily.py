@@ -6,7 +6,7 @@ from collections import defaultdict
 from pathlib import Path
 from typing import Any
 
-from ..domain import Outcome, Probability3, ThreeWayOdds, to_dict
+from ..domain import MarketRole, Outcome, Probability3, ThreeWayOdds, to_dict
 from ..storage import read_json
 from .metrics import BacktestObservation, evaluate
 
@@ -55,13 +55,20 @@ def evaluate_daily_files(prediction_file: Path, results_file: Path) -> dict[str,
                 float(raw_odds["away"]),
                 raw_odds.get("source", "prediction-snapshot"),
                 raw_odds.get("updated_at", ""),
+                MarketRole.TARGET,
             )
             if raw_odds
             else None
         )
         matched.append(
             (
-                BacktestObservation(probabilities, actual, odds),
+                BacktestObservation(
+                    probabilities,
+                    actual,
+                    odds,
+                    decision_state=row.get("decision_state"),
+                    target_used_as_signal=bool(row.get("target_used_as_signal", False)),
+                ),
                 {
                     "league": str(match.get("league", "未知联赛")),
                     "confidence": str(row.get("confidence", "unknown")),

@@ -1,4 +1,4 @@
 interface:
-  display_name: "竞彩足球智能预测"
-  short_description: "按日期生成竞彩足球概率、价值、情报、回测和离线报告"
-  default_prompt: "使用 $football-prediction-skill 分析今天的竞彩足球并生成完整 HTML 报告。"
+  display_name: "竞彩足球概率研究"
+  short_description: "事件时间可追溯的竞彩足球概率、赛前情报、模型回测与离线HTML报告"
+  default_prompt: "使用 $football-prediction-skill 按严格赛前截点分析今天的竞彩足球，区分参考市场与目标竞彩，生成可追溯的完整 HTML 报告。"

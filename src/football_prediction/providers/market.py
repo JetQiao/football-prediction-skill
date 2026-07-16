@@ -6,7 +6,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-from ..domain import ThreeWayOdds
+from ..domain import MarketRole, Match, ThreeWayOdds
 from .base import ProviderError, fetch_json, with_query
 from .names import name_key
 
@@ -27,6 +27,7 @@ class LocalMarketProvider:
                 away=float(row["away_odds"]),
                 source=row.get("source", "local-market"),
                 updated_at=row.get("updated_at", ""),
+                role=MarketRole(row.get("role", MarketRole.REFERENCE.value)),
             )
             for row in rows
         }
@@ -60,6 +61,38 @@ class TheOddsAPIProvider:
                 result[LocalMarketProvider.key(item["home_team"], item["away_team"])] = market
         return result
 
+    def fetch_for_matches(self, matches: list[Match]) -> tuple[dict[str, ThreeWayOdds], list[str]]:
+        """按竞彩联赛映射批量抓取；未知联赛明确降级，不静默猜测。"""
+
+        sport_keys = {
+            "英超": "soccer_epl",
+            "西甲": "soccer_spain_la_liga",
+            "德甲": "soccer_germany_bundesliga",
+            "意甲": "soccer_italy_serie_a",
+            "法甲": "soccer_france_ligue_one",
+            "欧冠": "soccer_uefa_champs_league",
+            "欧联": "soccer_uefa_europa_league",
+            "欧协联": "soccer_uefa_europa_conference_league",
+            "中超": "soccer_china_superleague",
+            "日职": "soccer_japan_j_league",
+            "美职": "soccer_usa_mls",
+        }
+        requested: set[str] = set()
+        warnings: list[str] = []
+        for match in matches:
+            sport = next((key for label, key in sport_keys.items() if label in match.league), None)
+            if sport:
+                requested.add(sport)
+            else:
+                warnings.append(f"{match.league} 未配置 The Odds API sport key，参考市场降级")
+        result: dict[str, ThreeWayOdds] = {}
+        for sport in sorted(requested):
+            try:
+                result.update(self.fetch(sport))
+            except (ProviderError, OSError, ValueError) as exc:
+                warnings.append(f"{sport} 参考市场获取失败：{exc}")
+        return result, warnings
+
     @staticmethod
     def _pick_market(item: dict[str, Any]) -> ThreeWayOdds | None:
         bookmakers = item.get("bookmakers") or []
@@ -78,6 +111,7 @@ class TheOddsAPIProvider:
                 away=float(prices[item["away_team"]]),
                 source=f"the-odds-api:{book.get('key', 'unknown')}",
                 updated_at=book.get("last_update", ""),
+                role=MarketRole.REFERENCE,
             )
         except (KeyError, TypeError, ValueError):
             return None

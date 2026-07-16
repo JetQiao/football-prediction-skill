@@ -1,0 +1,5 @@
+<section class="sources-section" aria-labelledby="sourceTitle">
+  <div class="section-heading"><div><span class="eyebrow">可追溯性</span><h2 id="sourceTitle">数据来源与降级</h2></div></div>
+  <div class="source-chips">{% for source in report.sources %}<span>{{ source }}</span>{% endfor %}</div>
+  {% if report.warnings %}<div class="notice warning"><strong>运行警告</strong><ul>{% for warning in report.warnings %}<li>{{ warning }}</li>{% endfor %}</ul></div>{% endif %}
+</section>

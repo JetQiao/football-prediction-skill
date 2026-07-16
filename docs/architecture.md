@@ -1,34 +1,103 @@
 # 架构设计
 
-## 数据流
+## 生产数据流
 
 ```text
-竞彩/SportteryAPI ─→ 全赛单守卫 → 五玩法联合校准 ─┐
-Elo/xG/伤病 ───────────────→ Dixon-Coles ────────┼→ 概率融合 → 情报限幅 → 价值评估
-赛前外部市场快照 ────────────────────────────────┘                 ↓
-                                              JSON + manifest + 自包含 HTML
-赛后比分 ─→ prediction 快照对齐 ─→ 分层 Brier / Log-loss / ROI 评估
+赛单 / 目标竞彩 SP ─┐
+独立参考市场 ───────┤
+Elo / xG / 阵容事实 ├→ 不可变快照 → 身份与事件时间校验 → PredictionPipeline
+有来源赛前情报 ─────┘                                      │
+                                                           ├→ 动态 Dixon-Coles
+模型注册表 ────────────────────────────────────────────────┤
+                                                           ├→ 样本外市场融合
+                                                           ├→ 温度校准
+                                                           ├→ 弃权 / 价值策略
+                                                           └→ JSON / Manifest / HTML
+
+赛后结果 + 历史快照 → 同一个 PredictionPipeline 回放 → 指标与模型晋级
 ```
 
-## 边界
+## 模块边界
 
-- `providers/` 只负责抓取、契约校验和归一化，不在适配器里做模型判断。
-- Provider 以官方赛单为边界保留所有比赛；HAD 缺失不是过滤条件，源场次数与解析场次数不一致时立即失败。
-- `modeling/` 是确定性纯计算；Dixon-Coles 可由历史数据拟合，也能在缺少模型时使用 Elo/xG 特征。
-- `modeling/market_calibration.py` 把 HAD、HHAD、比分、总进球、半全场共同约束到一组期望进球与比分矩阵。
-- `intelligence/` 不抓网页，只校验智能体产出的来源、时间和影响边界。
-- `backtest/` 严格按时间滚动，拟合窗口永远截止于当前比赛之前。
-- `reporting/` 不访问网络，模板和图表全部随 Python 包分发。
-- 用户数据写入平台数据目录，升级 Skill 不覆盖历史报告。
+- `providers/`：抓取、契约校验和归一化，不做胜平负判断。
+- `snapshots/`：DuckDB 目录、Parquet 数据与 JSON 信封；快照按事件时间不可变。
+- `modeling/`：Dixon-Coles、去水、样本外融合、校准和模型注册表。
+- `prediction.py`：生产与回放共享的唯一概率入口。
+- `policy/`：置信度、不确定性、弃权和价值门槛。
+- `intelligence/`：校验来源与时间；结构化阵容事实不直接携带赛果方向。
+- `backtest/`：按比赛日整体留出，计算概率与策略指标。
+- `reporting/`：视图模型、模板、CSS 与 JavaScript；运行时不访问网络。
 
-## 概率融合
+## 事件时间
 
-统计概率与市场去水概率使用 logarithmic opinion pool，不把已经进入 xG/攻防模型的实力与状态再次按百分比相加。没有独立 Elo/xG 或外部市场时，官方多玩法只作为低置信“市场基线”，禁止标记为独立模型优势或价值信号。情报只作为有界 logit 残差，最后再进行温度校准。
+所有可进入模型的数据必须满足：
 
-## SportteryAPI
+```text
+observed_at <= as_of < kickoff_at
+model.trained_until < business_date
+```
 
-SportteryAPI 未以可直接导入的公共 npm 库发布，因此本项目通过其 REST/MCP 输出契约集成，并复用其公开的五类玩法编码约定。未配置服务时，本地 Provider 直连同一官方上游并只承担必要的响应归一化。
+同一比赛日全部预测完成后，赛果才能进入训练历史。CSV 没有可靠开赛时间时，以日期为最小批次，禁止同日行间泄漏。
+
+## 市场角色
+
+- `reference_market`：预测先验或融合输入。
+- `target_market`：竞彩价格比较对象。
+- `benchmark_market`：历史评估基准。
+
+目标市场不能同时作为同一价值判断的预测来源。只有竞彩自身多玩法时，可以展示“目标市场共识”，但必须 `abstain`。
+
+## 快照
+
+快照信封至少记录：
+
+- `dataset`
+- `business_date`
+- `as_of`
+- `observed_at`
+- `source`
+- `source_event_id`
+- `schema_version`
+- `payload_hash`
+- `snapshot_id`
+
+`payload_hash` 只表示内容；`snapshot_id` 同时包含来源与事件时间。因此相同内容在两个不同截点会保留为两个快照。
+
+## 模型与晋级
+
+Champion 基础模型是按联赛训练的动态 Dixon-Coles。市场融合器从 OOF 概率学习：
+
+- 市场权重。
+- 主胜/平/客的有界系统性偏置。
+- 去水方法：Multiplicative、Power 或 Shin。
+
+随后使用 OOF 概率训练温度校准器。生产模型必须同时满足：
+
+- Log-loss 不比市场差超过 0.2%。
+- Brier 至少优于市场 0.5%。
+- RPS 不比市场差超过 0.2%。
+- ECE 不高于 0.03。
+
+未通过门槛的模型保留为 challenger，但 `ModelRegistry.resolve()` 默认不加载。
+
+## 阵容与情报
+
+推荐输入 `AvailabilityFact`：
+
+- 球队、球员、状态、位置。
+- 预计分钟变化。
+- 来源 URL、观测时间和可信度。
+- 事件 fingerprint。
+
+确定性层把事实映射为最多 12% 的进攻/防守 xG 调整。旧的 `IntelEvidence.impact` 仅为兼容路径，继续受单条与总量边界限制。
+
+## 决策状态
+
+- `candidate`：独立概率、校准状态和价格优势全部通过。
+- `lean`：有方向，但缺少价格、校准或足够优势。
+- `no_edge`：目标价格没有正向独立优势。
+- `abstain`：数据不足、目标价格进入概率或不确定性过高。
 
 ## 可追溯性
 
-每次运行生成 SHA-256 `run_id`、数据源列表、模型参数、降级警告和产物路径。API Key 不进入产物。
+manifest 保存快照 ID、模型版本、训练截止、校准状态、参数、决策计数和产物路径。API Key 不进入任何产物。

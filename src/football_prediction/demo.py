@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from datetime import date
 
-from .domain import BettingMarketOdds, MarketOutcomeOdds, Match, ThreeWayOdds
+from .domain import BettingMarketOdds, MarketOutcomeOdds, MarketRole, Match, ThreeWayOdds
 
 
 def _market(
@@ -77,7 +77,14 @@ def demo_matches(day: date) -> list[Match]:
             home="海港城",
             away="北境联",
             kickoff_at=f"{stamp}T20:00:00+08:00",
-            sporttery_odds=ThreeWayOdds(1.92, 3.35, 3.62, "demo", f"{stamp}T12:00:00+08:00"),
+            sporttery_odds=ThreeWayOdds(
+                1.92,
+                3.35,
+                3.62,
+                "demo",
+                f"{stamp}T12:00:00+08:00",
+                MarketRole.TARGET,
+            ),
             sporttery_markets=_demo_markets(stamp, (1.92, 3.35, 3.62), -1),
             handicap=-1,
             intel_tier="A",
@@ -90,7 +97,14 @@ def demo_matches(day: date) -> list[Match]:
             home="峡湾竞技",
             away="极光队",
             kickoff_at=f"{stamp}T22:30:00+08:00",
-            sporttery_odds=ThreeWayOdds(2.38, 3.15, 2.68, "demo", f"{stamp}T12:00:00+08:00"),
+            sporttery_odds=ThreeWayOdds(
+                2.38,
+                3.15,
+                2.68,
+                "demo",
+                f"{stamp}T12:00:00+08:00",
+                MarketRole.TARGET,
+            ),
             sporttery_markets=_demo_markets(stamp, (2.38, 3.15, 2.68), None),
             intel_tier="B",
         ),
@@ -102,7 +116,14 @@ def demo_matches(day: date) -> list[Match]:
             home="蓝队",
             away="金队",
             kickoff_at=f"{stamp}T23:00:00+08:00",
-            sporttery_odds=ThreeWayOdds(2.05, 3.10, 3.35, "demo", f"{stamp}T12:00:00+08:00"),
+            sporttery_odds=ThreeWayOdds(
+                2.05,
+                3.10,
+                3.35,
+                "demo",
+                f"{stamp}T12:00:00+08:00",
+                MarketRole.TARGET,
+            ),
             sporttery_markets=_demo_markets(stamp, (2.05, 3.10, 3.35), -1),
             handicap=-1,
             intel_tier="A",

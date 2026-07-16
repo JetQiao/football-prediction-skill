@@ -7,7 +7,7 @@ from datetime import date, datetime
 from pathlib import Path
 from typing import Any
 
-from ..domain import BettingMarketOdds, MarketOutcomeOdds, Match, ThreeWayOdds
+from ..domain import BettingMarketOdds, MarketOutcomeOdds, MarketRole, Match, ThreeWayOdds
 from .base import ProviderError, fetch_json, with_query
 
 OFFICIAL_URL = "https://webapi.sporttery.cn/gateway/jc/football/getMatchCalculatorV1.qry"
@@ -37,6 +37,15 @@ META_KEYS = {"goalLine", "goalLineValue", "updateDate", "updateTime", "id"}
 
 def _text(value: Any) -> str:
     return "" if value is None else str(value).strip()
+
+
+def _optional_int(value: Any) -> int | None:
+    """第三方 ID 可能为空或携带非数字占位，不能让整场赛单解析失败。"""
+
+    try:
+        return int(value) if value not in (None, "") else None
+    except (TypeError, ValueError):
+        return None
 
 
 def _iso_date(value: str) -> str:
@@ -117,6 +126,7 @@ def _official_market(pool: str, raw: dict[str, Any], updated_at: str) -> Betting
         outcomes=tuple(outcomes),
         updated_at=_text(raw.get("updateTime") or updated_at),
         line=line,
+        role=MarketRole.TARGET,
     )
 
 
@@ -147,6 +157,7 @@ def _api_market(pool: str, raw: dict[str, Any]) -> BettingMarketOdds | None:
         outcomes=tuple(outcomes),
         updated_at=_text(raw.get("updateTime")),
         line=line,
+        role=MarketRole.TARGET,
     )
 
 
@@ -156,7 +167,14 @@ def _had_odds(market: BettingMarketOdds | None, source: str) -> ThreeWayOdds | N
     home, draw, away = market.get("home"), market.get("draw"), market.get("away")
     if not all((home, draw, away)):
         return None
-    return ThreeWayOdds(home.odds, draw.odds, away.odds, source, market.updated_at)
+    return ThreeWayOdds(
+        home.odds,
+        draw.odds,
+        away.odds,
+        source,
+        market.updated_at,
+        MarketRole.TARGET,
+    )
 
 
 class SportteryProvider:
@@ -309,6 +327,13 @@ class SportteryProvider:
                     source_url="https://webapi.sporttery.cn/",
                     match_status=_text(item.get("matchStatus") or item.get("status")),
                     sale_status=item.get("sellStatus"),
+                    competition_id=_text((item.get("league") or {}).get("id")) or None,
+                    season_id=_text(item.get("seasonId")) or None,
+                    home_team_id=_text((item.get("home") or {}).get("id")) or None,
+                    away_team_id=_text((item.get("away") or {}).get("id")) or None,
+                    provider_fixture_id=_optional_int(
+                        item.get("providerFixtureId") or item.get("apiFootballFixtureId")
+                    ),
                 )
             )
         source_count = SportteryProvider._api_source_count(payload, business_date)

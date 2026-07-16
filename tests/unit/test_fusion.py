@@ -2,6 +2,7 @@ import unittest
 
 from football_prediction.config import Settings
 from football_prediction.domain import (
+    AvailabilityFact,
     BettingMarketOdds,
     IntelEvidence,
     MarketOutcomeOdds,
@@ -54,12 +55,18 @@ class FusionTests(unittest.TestCase):
 
         model = predict_from_features(home, away).probabilities
         sp = remove_vig(match.sporttery_odds)
-        prediction = PredictionEngine(Settings()).predict(match, home, away)
+        prediction = PredictionEngine(Settings()).predict(
+            match,
+            home,
+            away,
+            use_official_market_signal=True,
+        )
         # 强队被合理评级，且最终概率被拉向官方 SP（介于纯模型与 SP 去水之间）。
         self.assertGreater(prediction.final_probs.home, 0.68)
         self.assertGreaterEqual(prediction.final_probs.home, min(model.home, sp.home) - 1e-6)
         self.assertLessEqual(prediction.final_probs.home, max(model.home, sp.home) + 1e-6)
         self.assertIn("市场权重", " ".join(prediction.reasons))
+        self.assertTrue(prediction.target_used_as_signal)
         self.assertNotEqual(prediction.confidence, "low")
 
     def test_fallback_model_does_not_emit_value_signal(self):
@@ -121,6 +128,40 @@ class FusionTests(unittest.TestCase):
         self.assertGreater(prediction.expected_home_goals, prediction.expected_away_goals + 1.5)
         self.assertNotAlmostEqual(prediction.expected_home_goals, 1.452, places=2)
         self.assertIn("普通胜平负尚未开售", " ".join(prediction.warnings))
+
+    def test_structured_absence_adjusts_xg_without_direct_outcome_impact(self):
+        match = Match(
+            id="availability",
+            business_date="2026-07-03",
+            match_no="周五001",
+            league="测试联赛",
+            home="主队",
+            away="客队",
+            kickoff_at="2026-07-03T20:00:00+08:00",
+        )
+        home = TeamFeatures("主队", elo=1800, xg_for=1.8, xg_against=1.0, source="test")
+        away = TeamFeatures("客队", elo=1750, xg_for=1.4, xg_against=1.2, source="test")
+        baseline = PredictionEngine(Settings()).predict(match, home, away)
+        fact = AvailabilityFact(
+            event_type="player_unavailable",
+            team="主队",
+            player="主力前锋",
+            status="confirmed_out",
+            observed_at="2026-07-03T10:00:00+08:00",
+            source_url="https://example.com/official",
+            credibility=1.0,
+            position="ST",
+            expected_minutes_delta=-90,
+        )
+        adjusted = PredictionEngine(Settings()).predict(
+            match,
+            home,
+            away,
+            intel=MatchIntel("availability", facts=(fact,), completeness=0.8),
+            as_of="2026-07-03T12:00:00+08:00",
+        )
+        self.assertLess(adjusted.expected_home_goals, baseline.expected_home_goals)
+        self.assertIn("结构化阵容事实", " ".join(adjusted.reasons))
 
 
 if __name__ == "__main__":

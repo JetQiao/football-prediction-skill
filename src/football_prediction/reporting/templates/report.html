@@ -4,347 +4,67 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="color-scheme" content="dark">
-  <title>{{ report.business_date }} 竞彩足球智能预测</title>
-  <meta name="theme-color" content="#0b0f16">
-  <style>
-    :root{
-      color-scheme:dark;--bg:#0b0f16;--surface:#141b26;--surface-2:#1a222e;--surface-3:#212b3a;
-      --line:#2a3444;--line-strong:#3c4a5e;--text:#eef2f8;--muted:#8b96a8;--dim:#5c6779;
-      --primary:#2f6fed;--primary-strong:#6fa0ff;--primary-ink:#ffffff;--primary-soft:rgba(47,111,237,.18);
-      --positive:#34d399;--positive-soft:rgba(52,211,153,.16);--amber:#fbbf24;--amber-soft:rgba(251,191,36,.16);
-      --red:#f87171;--red-soft:rgba(248,113,113,.16);--blue:#2f6fed;
-      --home:#4f7cff;--draw:#97a3b8;--away:#ff8a3d;--radius:16px;--radius-sm:11px;--top:64px;
-      --shadow-sm:0 1px 2px rgba(0,0,0,.4);--shadow-md:0 10px 26px rgba(0,0,0,.45),0 2px 8px rgba(0,0,0,.35);--shadow-lg:0 26px 64px rgba(0,0,0,.5);
-      --mono:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace
-    }
-    *{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:120px}body{margin:0;min-width:320px;background:linear-gradient(180deg,rgba(47,111,237,.16),rgba(47,111,237,0) 380px) var(--bg);color:var(--text);font:15px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased}
-    button,select{font:inherit}button,a,summary,select{outline-offset:3px}button:focus-visible,a:focus-visible,summary:focus-visible,select:focus-visible{outline:3px solid var(--primary)}button{cursor:pointer}a{color:inherit;text-decoration:none}.shell{width:min(1280px,calc(100% - 40px));margin:auto}.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}.icon{display:block;width:1.2em;height:1.2em;fill:currentColor}.icon-label{display:inline-flex;align-items:center;gap:8px}
-    .crest{display:inline-flex;flex:0 0 auto;align-items:center;justify-content:center;border-radius:50%;background:linear-gradient(135deg,var(--primary),#5aa9ff);color:#fff;font-weight:800;line-height:1;letter-spacing:0}
-    .crest.lg{width:56px;height:56px;font-size:22px}.crest.md{width:40px;height:40px;font-size:15px}.crest.sm{width:26px;height:26px;font-size:11px}
-    .crest.has-flag{background-size:cover;background-position:center;background-repeat:no-repeat;color:transparent;box-shadow:inset 0 0 0 1px rgba(255,255,255,.16)}
-    .topbar{position:sticky;top:0;z-index:30;height:var(--top);border-bottom:1px solid var(--line);background:rgba(11,15,22,.78);backdrop-filter:blur(14px)}.nav{height:100%;display:flex;align-items:center;gap:28px}.brand{display:flex;align-items:center;gap:11px;min-width:250px}.brand-index{display:grid;place-items:center;width:38px;height:38px;border-radius:12px;background:linear-gradient(135deg,var(--primary),#5aa9ff);color:#fff;font-size:20px;box-shadow:var(--shadow-sm)}.brand-copy strong{display:block;font-size:15px;line-height:1.2;letter-spacing:.01em}.brand-copy strong em{color:var(--primary);font-style:normal}.brand-copy small{display:block;margin-top:3px;color:var(--muted);font-size:10px;letter-spacing:.08em}.navlinks{display:flex;align-items:center;gap:4px;flex:1;min-width:0;height:100%;padding-left:8px}.navlinks a{position:relative;display:flex;align-items:center;flex:0 0 auto;height:36px;padding:0 14px;border-radius:999px;color:var(--muted);font-size:13px;font-weight:700;white-space:nowrap;transition:background .15s ease,color .15s ease}.navlinks a:hover{color:var(--text);background:var(--surface-3)}.navlinks a.active{color:var(--primary);background:var(--primary-soft)}.navmeta{display:flex;align-items:center;gap:10px}.status{color:var(--positive);font:700 10px/1 var(--mono);letter-spacing:.06em;white-space:nowrap;padding:7px 10px;border-radius:999px;background:var(--positive-soft)}.ghost-btn,.tool-btn,.filter-btn,.toolbar select{min-height:40px;border:1px solid var(--line-strong);border-radius:999px;background:var(--surface);color:var(--text);padding:8px 15px;font-weight:700;transition:background .15s ease,border-color .15s ease,color .15s ease,box-shadow .15s ease}.ghost-btn:hover,.tool-btn:hover,.toolbar select:hover{border-color:var(--primary);color:var(--primary)}.primary-btn{min-height:40px;border:0;border-radius:999px;background:var(--primary);color:#fff;padding:8px 18px;font-weight:800;box-shadow:var(--shadow-sm);transition:background .15s ease,box-shadow .15s ease}.primary-btn:hover{background:var(--primary-strong);box-shadow:var(--shadow-md)}
-    .ticker{border-bottom:1px solid var(--line);background:var(--surface)}.ticker-shell{display:flex;align-items:center;gap:16px;min-height:48px}.ticker-label{flex:0 0 auto;color:var(--primary);font:800 10px/1 var(--mono);letter-spacing:.1em}.ticker-label .icon{font-size:16px}.ticker-track{display:flex;align-items:center;gap:8px;min-width:0;overflow:auto;scrollbar-width:none;padding:8px 0}.ticker-track::-webkit-scrollbar{display:none}.ticker-item{flex:0 0 auto;display:flex;align-items:center;gap:8px;height:32px;padding:0 14px;border:1px solid var(--line);border-radius:999px;background:var(--surface-2);color:var(--muted);font-size:12px;white-space:nowrap;transition:border-color .15s ease,background .15s ease}.ticker-item:hover{border-color:var(--primary);background:var(--primary-soft)}.ticker-item b{color:var(--text);margin:0 2px;font-weight:750}.ticker-item i{color:var(--primary);font:700 10px/1 var(--mono);font-style:normal;padding:3px 6px;border-radius:6px;background:var(--primary-soft)}
-    .hero{position:relative;margin:24px auto 44px;border:1px solid var(--line);border-radius:22px;background:var(--surface);box-shadow:var(--shadow-lg);overflow:hidden}.hero-top{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:13px 24px;border-bottom:1px solid var(--line);background:var(--surface-2);color:var(--muted);font:750 10px/1 var(--mono);letter-spacing:.08em}.hero-top .matchday-label{color:var(--primary)}.hero-stage{display:grid;grid-template-columns:minmax(300px,.78fr) minmax(460px,1.22fr)}.hero-main{padding:30px 32px}.kicker{display:inline-flex;align-items:center;gap:8px;color:var(--primary);font:750 10px/1 var(--mono);letter-spacing:.1em}.hero h1{margin:16px 0 12px;font-size:26px;line-height:1.15;letter-spacing:-.02em}.hero h1 em{color:var(--primary);font-style:normal}.hero-copy{max-width:440px;margin:0;color:var(--muted);font-size:13px}.feature-match{position:relative;min-width:0;padding:26px 30px;border-left:1px solid var(--line);background:var(--surface)}.feature-meta{display:flex;align-items:center;justify-content:space-between;gap:16px;color:var(--muted);font:700 10px/1 var(--mono);letter-spacing:.08em}.feature-meta strong{color:var(--primary)}.feature-teams{display:grid;grid-template-columns:minmax(0,1fr) 72px minmax(0,1fr);align-items:center;gap:12px;margin:22px 0 20px}.feature-team-block{display:flex;flex-direction:column;align-items:center;gap:10px;min-width:0;text-align:center}.feature-team{min-width:0;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:clamp(15px,1.6vw,19px);font-weight:800;letter-spacing:-.01em}.feature-vs{display:grid;place-items:center;width:52px;height:52px;margin:auto;border:1px solid var(--line-strong);border-radius:50%;background:var(--surface-2);font:900 13px/1 var(--mono);color:var(--muted)}.feature-vs small{display:block;margin-top:4px;color:var(--primary);font-size:9px}.feature-prob{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border-radius:12px;overflow:hidden}.feature-prob div{padding:10px 8px;background:var(--surface-2);text-align:center}.feature-prob b{display:block;font:800 18px/1.2 var(--mono)}.feature-prob span{color:var(--muted);font-size:10px}.feature-verdict{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;margin-top:16px;padding-top:16px;border-top:1px solid var(--line)}.feature-verdict span{display:block;color:var(--muted);font-size:10px}.feature-verdict strong{display:block;margin-top:3px;font-size:20px}.feature-verdict b{color:var(--primary);font:800 17px/1 var(--mono)}.hero-empty{margin:60px auto;color:var(--muted);text-align:center}.hero-stats{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--line);background:var(--surface-2)}.hero-stat{display:grid;grid-template-columns:auto 1fr;align-items:center;gap:12px;padding:15px 22px}.hero-stat+.hero-stat{border-left:1px solid var(--line)}.hero-stat .icon-wrap{display:grid;place-items:center;width:34px;height:34px;border-radius:10px;background:var(--primary-soft);color:var(--primary)}.hero-stat .icon{font-size:18px}.hero-stat b{display:block;color:var(--text);font:750 22px/1 var(--mono)}.hero-stat span{display:block;margin-top:4px;color:var(--muted);font-size:10px}
-    .section{margin:0 auto 50px}.section-heading{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;margin-bottom:16px}.section-heading h2{margin:0;font-size:22px;line-height:1.2;letter-spacing:-.02em}.section-heading p{margin:6px 0 0;color:var(--muted);font-size:12px}.section-heading .count{padding:6px 11px;border:1px solid var(--line-strong);border-radius:999px;color:var(--primary);font:750 10px/1 var(--mono);letter-spacing:.06em;background:var(--primary-soft)}.section-kicker{display:flex;align-items:center;gap:8px;margin-bottom:8px;color:var(--primary);font:750 10px/1 var(--mono);letter-spacing:.1em}.section-kicker .icon{font-size:15px}.explain{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--line);border-radius:var(--radius);background:var(--surface);overflow:hidden;box-shadow:var(--shadow-sm)}.explain div{position:relative;padding:20px 20px 20px 56px}.explain div+div{border-left:1px solid var(--line)}.explain i{position:absolute;top:19px;left:20px;display:grid;place-items:center;width:26px;height:26px;border-radius:8px;background:var(--primary);color:#fff;font:800 10px/1 var(--mono);font-style:normal}.explain b{display:block;margin-bottom:5px}.explain span{color:var(--muted);font-size:12px}.picks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.pick{position:relative;padding:18px;border:1px solid var(--line);border-radius:var(--radius);background:var(--surface);box-shadow:var(--shadow-sm);transition:box-shadow .15s ease,border-color .15s ease,transform .15s ease}.pick:hover{box-shadow:var(--shadow-md);border-color:var(--line-strong);transform:translateY(-2px)}.pick-top{display:flex;align-items:center;justify-content:space-between;gap:14px}.pick-index{display:grid;place-items:center;width:28px;height:28px;border-radius:8px;background:var(--primary-soft);color:var(--primary);font:800 11px/1 var(--mono)}.pick-meta{color:var(--muted);font:700 10px/1 var(--mono);letter-spacing:.03em;text-align:right}.pick-match{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px;margin:20px 0;text-align:center}.pick-team{display:flex;flex-direction:column;align-items:center;gap:8px;min-width:0}.pick-team strong{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:16px;font-weight:800}.pick-match i{display:grid;place-items:center;width:34px;height:34px;border-radius:50%;background:var(--surface-2);border:1px solid var(--line);color:var(--muted);font:800 9px/1 var(--mono);font-style:normal}.pick-call{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;padding-top:14px;border-top:1px solid var(--line)}.pick-call span{display:block;color:var(--muted);font-size:10px}.pick-call h3{margin:3px 0 0;font-size:19px}.pick-value{text-align:right}.pick-value strong{display:block;color:var(--primary);font:750 19px/1.2 var(--mono)}.pick-value span{display:block;margin-top:4px;color:var(--muted);font-size:10px}.empty{padding:26px;border:1px solid var(--line);border-radius:var(--radius);background:var(--surface);color:var(--muted);text-align:center}
-    .toolbar{position:sticky;top:calc(var(--top) + 8px);z-index:20;display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:13px;padding:8px;border:1px solid var(--line);border-radius:999px;background:rgba(15,20,28,.88);backdrop-filter:blur(14px);box-shadow:var(--shadow-sm)}.toolbar select{appearance:none;min-width:140px;padding-right:34px;background:linear-gradient(45deg,transparent 50%,var(--muted) 50%) calc(100% - 16px) 18px/5px 5px no-repeat,linear-gradient(135deg,var(--muted) 50%,transparent 50%) calc(100% - 11px) 18px/5px 5px no-repeat,var(--surface)}.filter-btn{color:var(--muted)}.filter-btn.active,.filter-btn:hover{border-color:var(--primary);background:var(--primary);color:var(--primary-ink)}.toolbar-spacer{flex:1}.match-list{display:grid;gap:10px}.match{border:1px solid var(--line);border-radius:var(--radius);background:var(--surface);box-shadow:var(--shadow-sm);overflow:hidden;transition:box-shadow .15s ease,border-color .15s ease}.match:hover{box-shadow:var(--shadow-md)}.match[hidden]{display:none}.match[open]{border-color:var(--primary)}.match summary{list-style:none;cursor:pointer;padding:16px 18px;display:grid;grid-template-columns:minmax(0,1.15fr) minmax(280px,.85fr);gap:14px 28px;align-items:center;transition:background .15s ease}.match summary::-webkit-details-marker{display:none}.match summary:hover{background:var(--surface-2)}.match[open] summary{background:var(--primary-soft)}.match-head{display:flex;align-items:center;gap:14px;min-width:0}.match-id{display:flex;align-items:center;gap:10px;min-width:88px}.match-id .badge-chip{display:grid;place-items:center;flex:0 0 auto;width:30px;height:30px;border-radius:9px;background:var(--primary-soft);color:var(--primary)}.match-id .badge-chip .icon{font-size:16px}.match-id b{display:block;color:var(--primary);font:750 11px/1.2 var(--mono)}.match-id span{display:block;margin-top:4px;color:var(--muted);font-size:10px;line-height:1.4}.match-teams{min-width:0}.mt-row{display:grid;grid-template-columns:minmax(0,1fr) 30px minmax(0,1fr);align-items:center;gap:8px}.mt-side{display:flex;align-items:center;gap:7px;min-width:0}.mt-side.home{justify-content:flex-end}.mt-side.away{justify-content:flex-start}.mt-name{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:16px;font-weight:800}.mt-vs{text-align:center;color:var(--dim);font:800 9px/1 var(--mono)}.match-teams p{margin:7px 0 0;color:var(--muted);font-size:11px;text-align:center}.summary-prob{min-width:0}.prob-caption{display:block;margin-bottom:7px;color:var(--muted);font:700 9px/1 var(--mono);letter-spacing:.06em}.probbar{height:11px;display:flex;overflow:hidden;border-radius:999px;background:var(--surface-3)}.probbar i{display:block;height:100%}.probbar .home{background:var(--home)}.probbar .draw{background:var(--draw)}.probbar .away{background:var(--away)}.prob-legend{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px;font-size:11px}.prob-legend span{display:flex;align-items:center;gap:5px}.prob-legend span:nth-child(2){justify-content:center}.prob-legend span:nth-child(3){justify-content:flex-end}.prob-legend em{display:inline-block;width:7px;height:7px;border-radius:50%;font-style:normal}.prob-legend span:nth-child(1) em{background:var(--home)}.prob-legend span:nth-child(2) em{background:var(--draw)}.prob-legend span:nth-child(3) em{background:var(--away)}.prob-legend b{color:var(--text);font-family:var(--mono)}.prob-legend small{margin-left:2px;color:var(--muted)}.summary-badges{grid-column:1/-1;display:flex;align-items:center;gap:7px;flex-wrap:wrap}.badge{padding:5px 10px;border-radius:999px;color:var(--muted);background:var(--surface-3);font:750 9px/1.2 var(--mono)}.badge.primary{background:var(--primary-soft);color:var(--primary-strong)}.badge.amber{background:var(--amber-soft);color:var(--amber)}.badge.red{background:var(--red-soft);color:var(--red)}.open-copy{margin-left:auto;display:inline-flex;align-items:center;gap:8px;padding:6px 6px 6px 12px;border:1px solid var(--line-strong);border-radius:999px;color:var(--muted);font-size:11px;font-weight:700}.match[open] .open-copy{color:var(--primary);border-color:var(--primary)}.chevron{display:inline-block;width:16px;height:16px;border-radius:50%;background:var(--surface-3);position:relative;flex:0 0 auto}.chevron:before{content:"";position:absolute;top:50%;left:50%;width:6px;height:6px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:translate(-65%,-65%) rotate(45deg);transition:transform .2s ease}.match[open] .chevron:before{transform:translate(-50%,-75%) rotate(-135deg)}
-    .detail{border-top:1px solid var(--line);background:var(--surface-2)}.match-center-head{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:11px 20px;border-bottom:1px solid var(--line);background:var(--surface);color:var(--muted);font:700 9px/1 var(--mono);letter-spacing:.08em}.match-center-head .icon-label{color:var(--primary)}.tabs{display:inline-flex;gap:2px;max-width:calc(100% - 40px);margin:16px 20px 0;padding:4px;border-radius:999px;background:var(--surface-3);overflow:auto}.tab-btn{min-height:38px;padding:0 16px;border:0;border-radius:999px;background:transparent;color:var(--muted);white-space:nowrap;font-weight:700;transition:background .15s ease,color .15s ease}.tab-btn:hover{color:var(--text)}.tab-btn[aria-selected="true"]{background:var(--surface);color:var(--primary);font-weight:800;box-shadow:var(--shadow-sm)}.tab-panel{padding:20px}.tab-panel[hidden]{display:none}.verdict{margin-bottom:18px;padding:14px 16px;border-radius:12px;background:var(--primary-soft)}.verdict b{color:var(--primary-strong)}.overview-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:14px}.card,.play{border:1px solid var(--line);border-radius:14px;background:var(--surface);padding:16px;box-shadow:var(--shadow-sm)}.card h4{margin:0 0 12px;color:var(--muted);font-size:11px;letter-spacing:.05em}.wdl-large{height:40px}.compare{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}.compare-row{display:grid;grid-template-columns:72px repeat(3,1fr);gap:8px;align-items:center;margin-top:8px}.compare-row>span{color:var(--muted);font-size:10px}.compare-cell{position:relative;overflow:hidden;padding:8px;border-radius:8px;background:var(--surface-3);text-align:right}.compare-cell i{position:absolute;inset:0 auto 0 0;background:var(--primary-soft)}.compare-cell b{position:relative;font:750 10px/1 var(--mono)}.value-box{display:grid;grid-template-columns:1fr 1fr;gap:10px}.value-metric{padding:14px;border-radius:12px;background:var(--surface-3)}.value-metric b{display:block;font:700 23px/1.2 var(--mono)}.value-metric span{color:var(--muted);font-size:10px}.value-metric.good{background:var(--positive-soft)}.value-metric.good b{color:var(--positive)}.value-metric.warn{background:var(--amber-soft)}.value-metric.warn b{color:var(--amber)}.plain-note{margin:12px 0 0;color:var(--muted);font-size:12px}.reason-list,.warning-list,.evidence{margin:10px 0 0;padding-left:18px}.reason-list li,.warning-list li,.evidence li{margin:7px 0}.warning-list{color:var(--red)}.evidence a{color:var(--primary);text-decoration:underline;text-decoration-color:var(--primary-soft)}
-    .market-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.play.wide{grid-column:1/-1}.play-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px}.play h4{margin:0;font-size:15px}.play-head p{margin:4px 0 0;color:var(--muted);font-size:11px}.source-tag{padding:5px 9px;border-radius:999px;background:var(--surface-3);color:var(--muted);font:750 9px/1.2 var(--mono);white-space:nowrap}.source-tag.live{background:var(--positive-soft);color:var(--positive)}.play-result{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:12px;padding:13px;border-radius:10px;background:var(--surface-3)}.play-result strong{display:block;font-size:19px}.play-result b{color:var(--primary);font:700 18px/1 var(--mono)}.play-result span{color:var(--muted);font-size:10px}.odds-row{display:flex;gap:7px;flex-wrap:wrap}.odd{padding:7px 10px;border-radius:999px;background:var(--surface-3);font-size:11px;font-weight:600}.odd b{margin-left:5px;color:var(--text);font-family:var(--mono)}.odd .up{color:var(--red)}.odd .down{color:var(--positive)}.score-pills{display:flex;gap:8px;flex-wrap:wrap}.score-pill{padding:8px 11px;border-radius:999px;background:var(--surface-3)}.score-pill b{margin-left:4px;color:var(--primary);font-family:var(--mono)}.dist{height:130px;display:flex;align-items:flex-end;gap:8px;margin-top:12px}.dist-col{flex:1;min-width:26px;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:5px}.dist-col b{color:var(--muted);font:650 9px/1 var(--mono)}.dist-col i{display:block;width:100%;min-height:3px;border-radius:5px 5px 0 0;background:linear-gradient(180deg,var(--primary),#7fa7f5)}.dist-col span{color:var(--muted);font-size:10px}.htft{width:100%;border-collapse:separate;border-spacing:5px}.htft th{padding:5px;color:var(--muted);font-size:10px;font-weight:650}.htft td{padding:11px 5px;background:var(--surface-3);border-radius:6px;font:650 11px/1 var(--mono);text-align:center}.htft td.top{outline:2px solid var(--primary);color:var(--primary-strong);background:var(--primary-soft)}.htft .rowhead{background:transparent;color:var(--muted);font-size:10px;font-weight:600;line-height:1.3;text-align:left}.matrix-wrap{display:grid;grid-template-columns:minmax(0,1fr) 260px;gap:14px}.matrix{display:grid;gap:4px;overflow:auto;padding:12px;border:1px solid var(--line);border-radius:14px;background:var(--surface)}.cell{min-width:34px;aspect-ratio:1;display:grid;place-items:center;border-radius:5px;color:var(--text);font:650 9px/1 var(--mono)}.matrix-guide p{color:var(--muted);font-size:12px}.matrix-guide dl{margin:16px 0 0}.matrix-guide dt{color:var(--muted);font-size:10px}.matrix-guide dd{margin:2px 0 12px;font:700 18px/1.3 var(--mono);color:var(--primary-strong)}.coverage{display:grid;grid-template-columns:150px 1fr;gap:16px;align-items:stretch;margin-bottom:16px}.coverage-score{display:grid;place-content:center;padding:16px;border-radius:14px;background:var(--primary-soft);text-align:center}.coverage-score b{display:block;color:var(--primary-strong);font:700 30px/1 var(--mono)}.coverage-score span{margin-top:8px;color:var(--muted);font-size:10px}.coverage-list{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}.coverage-item{display:grid;place-content:center;padding:10px;border-radius:10px;background:var(--surface-3);color:var(--muted);font-size:10px;text-align:center}.coverage-item.ok{background:var(--positive-soft);color:var(--positive)}
-    .control-summary{padding:26px 30px}.control-date{display:flex;align-items:flex-end;gap:12px;margin:18px 0 6px}.control-date strong{font:800 40px/.9 var(--mono);letter-spacing:-.03em;color:var(--text)}.control-date span{padding-bottom:5px;color:var(--primary);font:750 10px/1 var(--mono);letter-spacing:.08em}.control-summary h1{margin:14px 0 12px}.control-summary .hero-copy{max-width:420px}.integrity-list{margin-top:20px;border-top:1px solid var(--line)}.integrity-row{display:grid;grid-template-columns:16px 88px 1fr auto;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line);font-size:11px}.integrity-dot{width:8px;height:8px;border-radius:50%;background:var(--positive)}.integrity-row.warn .integrity-dot{background:var(--amber)}.integrity-row>span{color:var(--muted)}.integrity-row strong{font-weight:700}.integrity-row b{color:var(--positive);font:750 10px/1 var(--mono);padding:5px 9px;border-radius:999px;background:var(--positive-soft)}.integrity-row b.warn{color:var(--amber);background:var(--amber-soft)}.control-meta{margin-top:14px;color:var(--dim);font:600 9px/1.5 var(--mono);overflow-wrap:anywhere}
-    .feature-source-line{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:8px;color:var(--muted);font-size:10px}.feature-source-line a{color:var(--primary);text-decoration:underline;text-underline-offset:3px}.prob-table{margin-top:16px;border-top:1px solid var(--line)}.prob-row{display:grid;grid-template-columns:minmax(110px,1.2fr) repeat(3,minmax(60px,.72fr));align-items:center;border-bottom:1px solid var(--line)}.prob-row>span,.prob-row>b{padding:9px 10px}.prob-row>span{color:var(--muted);font-size:10px}.prob-row>b{font:750 12px/1 var(--mono);text-align:right}.prob-row.head{background:var(--surface-2)}.prob-row.head span,.prob-row.head b{color:var(--dim);font:750 8px/1 var(--mono);letter-spacing:.06em}.prob-row.final{background:var(--primary-soft);border-radius:10px}.prob-row.final span,.prob-row.final b{color:var(--primary-strong)}.prob-row .missing{grid-column:2/-1;color:var(--amber);font-size:10px;text-align:left}.sp-strip{display:grid;grid-template-columns:auto repeat(3,1fr);margin-top:13px;border-radius:12px;overflow:hidden;background:var(--line)}.sp-strip>span,.sp-strip>div{padding:9px 10px}.sp-strip>span{display:grid;place-items:center;background:var(--amber-soft);color:var(--amber);font:750 9px/1 var(--mono)}.sp-strip>div{background:var(--surface-2);text-align:center}.sp-strip b{display:block;font:750 13px/1.2 var(--mono)}.sp-strip small{display:block;margin-top:3px;color:var(--muted);font-size:9px}
-    .data-ribbon{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;padding:14px 20px;border-bottom:1px solid var(--line);background:var(--surface)}.data-layer{min-width:0;padding:10px 12px;border-radius:10px;background:var(--surface-3)}.data-layer-head{display:flex;align-items:center;gap:7px;color:var(--muted);font-size:9px}.data-dot{width:7px;height:7px;border-radius:50%;background:var(--red)}.data-layer.ok .data-dot{background:var(--positive)}.data-layer strong{display:block;margin-top:5px;font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.data-layer small{display:block;margin-top:2px;color:var(--dim);font:600 8px/1.4 var(--mono);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.verdict-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:7px}.verdict-head b{margin:0}.verdict-head span{color:var(--muted);font:700 9px/1 var(--mono)}.compare-row.final-row .compare-cell{background:var(--primary-soft)}.compare-row.official-row .compare-cell{background:var(--amber-soft)}.compare-row .delta-pos{color:var(--positive)}.compare-row .delta-neg{color:var(--red)}.source-meta{margin:10px 0 0;color:var(--dim);font:600 9px/1.5 var(--mono)}.source-band{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px;padding:10px 12px;border-radius:10px;background:var(--primary-soft);color:var(--muted);font-size:10px}.source-band strong{color:var(--primary-strong)}.evidence-meta{display:block;margin-top:4px;color:var(--dim);font:600 9px/1.5 var(--mono)}.missing-box{margin-top:16px;padding:13px 14px;border-radius:12px;background:var(--red-soft)}.missing-box h4{margin:0 0 8px;color:var(--red)}.missing-box ul{margin:0;padding-left:18px;color:var(--muted);font-size:11px}
-    .metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.metric{padding:16px 18px;border:1px solid var(--line);border-radius:14px;background:var(--surface);box-shadow:var(--shadow-sm)}.metric span{display:block;color:var(--muted);font-size:10px}.metric strong{display:block;margin-top:5px;font:700 22px/1.2 var(--mono);color:var(--primary-strong)}.charts{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}.chart{width:100%;height:200px}.guide{stroke:var(--line-strong);stroke-dasharray:4}.chart-line{fill:none;stroke:var(--primary);stroke-width:3}.source-list{display:flex;gap:8px;flex-wrap:wrap}.source-list span{padding:8px 12px;border:1px solid var(--line);border-radius:999px;background:var(--surface);color:var(--muted);font-size:11px}
-    .report-footer{position:relative;margin-top:70px;border-top:1px solid var(--line);background:var(--surface)}.footer-grid{display:grid;grid-template-columns:1fr 1.25fr .75fr;gap:0}.footer-block{padding:34px 30px 40px 0}.footer-block+.footer-block{padding-left:30px;border-left:1px solid var(--line)}.footer-label{display:flex;align-items:center;gap:8px;margin-bottom:12px;color:var(--primary);font:750 9px/1 var(--mono);letter-spacing:.1em}.footer-label .icon{font-size:15px}.footer-brand strong{display:block;font-size:16px;letter-spacing:.01em}.footer-brand p{max-width:440px;margin:8px 0 0;color:var(--muted);font-size:11px}.footer-compliance{padding-right:18px}.footer-compliance-card{padding:16px;border-radius:14px;background:var(--red-soft)}.footer-compliance-card strong{color:var(--red);font-size:14px}.footer-compliance-card p{max-width:420px;margin:8px 0 0;color:var(--muted);font-size:11px}.footer-meta{margin:0}.footer-meta div{display:flex;justify-content:space-between;gap:16px;padding:6px 0;border-bottom:1px solid var(--line)}.footer-meta dt{color:var(--muted);font-size:10px}.footer-meta dd{margin:0;color:var(--text);font:600 10px/1.5 var(--mono);text-align:right;overflow-wrap:anywhere}
-    @media(max-width:1080px){.nav{gap:18px}.brand{min-width:210px}.navlinks{gap:2px}.status{display:none}.hero-stage{grid-template-columns:1fr}.feature-match{border-top:1px solid var(--line);border-left:0}.overview-grid,.matrix-wrap{grid-template-columns:1fr}.footer-grid{grid-template-columns:1fr 1fr}.footer-block:last-child{grid-column:1/-1;padding-left:0;border-top:1px solid var(--line);border-left:0}.match summary{grid-template-columns:1fr}}
-    @media(max-width:780px){:root{--top:60px}.shell{width:min(100% - 24px,1280px)}.brand{min-width:auto}.brand-copy small{display:none}.nav{gap:14px}.navlinks{min-width:0;gap:2px;overflow-x:auto}.navmeta{display:none}.ticker-label{display:none}.hero{margin-top:16px}.hero-main{padding:24px 20px}.feature-match{padding:22px 20px}.hero-stats{grid-template-columns:repeat(2,1fr)}.hero-stat:nth-child(3){border-left:0}.hero-stat:nth-child(n+3){border-top:1px solid var(--line)}.explain{grid-template-columns:1fr}.explain div+div{border-top:1px solid var(--line);border-left:0}.picks,.market-grid,.charts{grid-template-columns:1fr}.play.wide{grid-column:auto}.toolbar{top:calc(var(--top) + 6px)}.coverage{grid-template-columns:1fr}.coverage-list{grid-template-columns:repeat(3,1fr)}.footer-grid{grid-template-columns:1fr}.footer-block,.footer-block+.footer-block{padding:24px 0;border-top:1px solid var(--line);border-left:0}.footer-block:first-child{border-top:0}.footer-block:last-child{grid-column:auto}}
-    @media(max-width:560px){body{font-size:16px}.shell{width:min(100% - 18px,1280px)}.topbar{position:relative;height:auto}.nav{height:auto;min-height:60px;flex-wrap:wrap;padding:8px 0 0}.brand{width:100%}.navlinks{width:100%;height:40px;order:3;border-top:1px solid var(--line);margin-top:6px}.navlinks a{min-height:40px}.ticker{display:none}.hero{margin:14px auto 36px;border-radius:18px}.hero-top{padding:12px 16px}.hero-top span:last-child{display:none}.hero-main{padding:22px 16px}.hero h1{font-size:22px}.hero-copy{font-size:13px}.feature-match{padding:20px 16px}.feature-teams{gap:8px;margin:20px 0 18px}.feature-team{font-size:14px}.feature-vs{width:44px;height:44px;font-size:11px}.feature-prob div{padding:9px 4px}.feature-prob b{font-size:15px}.feature-verdict strong{font-size:17px}.hero-stats{grid-template-columns:repeat(2,1fr)}.hero-stat{padding:13px 12px}.hero-stat:nth-child(odd){border-left:0}.section{margin-bottom:38px}.section-heading{align-items:flex-start;flex-direction:column;gap:8px}.section-heading h2{font-size:19px}.explain div{padding-left:52px}.pick{padding:14px}.pick-match{gap:6px;margin:16px 0}.pick-team strong{font-size:14px}.pick-call{align-items:flex-start;flex-direction:column;gap:8px}.pick-value{text-align:left}.toolbar{position:relative;top:auto;border-radius:16px}.toolbar select{width:100%}.toolbar-spacer{display:none}.match summary{padding:14px 14px}.match-head{align-items:flex-start;gap:8px}.match-id{min-width:70px}.mt-name{font-size:13px}.summary-badges{margin-top:2px}.open-copy{width:100%;justify-content:center;margin:6px 0 0}.match-center-head{align-items:flex-start;flex-direction:column}.tabs{max-width:calc(100% - 32px);margin:14px 16px 0}.tab-btn{min-height:44px;padding:0 12px}.tab-panel{padding:14px 12px}.verdict{padding:13px}.overview-grid{gap:10px}.compare-row{grid-template-columns:54px repeat(3,1fr);gap:4px}.value-box{grid-template-columns:1fr}.play{padding:13px}.play-result strong{font-size:16px}.dist{gap:4px}.htft{border-spacing:3px}.htft td{padding:9px 3px}.metrics{grid-template-columns:1fr 1fr}.coverage-list{grid-template-columns:repeat(2,1fr)}.footer-block,.footer-block+.footer-block{padding:22px 0}}
-    @media(max-width:780px){.control-summary{padding:24px 20px}.control-date strong{font-size:36px}.data-ribbon{grid-template-columns:repeat(5,minmax(135px,1fr));overflow:auto;scrollbar-width:thin}.data-layer{min-height:72px}.prob-row{grid-template-columns:minmax(96px,1.2fr) repeat(3,minmax(54px,.72fr))}.sp-strip{grid-template-columns:auto repeat(3,1fr)}}
-    @media(max-width:560px){.control-summary{padding:20px 16px}.control-date{align-items:flex-start;flex-direction:column;gap:6px}.control-date strong{font-size:32px}.control-date span{padding:0}.integrity-row{grid-template-columns:12px 74px 1fr;gap:6px}.integrity-row b{grid-column:1/-1;justify-self:start;margin-top:2px}.prob-table{overflow-x:auto}.prob-row{min-width:320px;grid-template-columns:96px repeat(3,1fr)}.prob-row>span,.prob-row>b{padding:8px 7px}.sp-strip>span,.sp-strip>div{padding:8px 5px}.sp-strip b{font-size:11px}.data-ribbon{grid-template-columns:repeat(5,135px)}.verdict-head{align-items:flex-start;flex-direction:column}.source-band{align-items:flex-start;flex-direction:column}}
-    @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
-    @media print{.topbar,.ticker,.toolbar,.tabs{display:none!important}body{background:#fff;color:#111}.hero,.match,.card,.play,.source-list span{box-shadow:none;border-color:#ccc}.hero-stage{display:block}.feature-match{border-left:0}.match .detail{display:block}.tab-panel{display:block!important}.match:not([open]) .detail{display:block}}
-  </style>
-  <style>{% for code, uri in flag_styles %}.flag-{{ code }}{background-image:url("{{ uri }}")}{% endfor %}</style>
+  <meta name="theme-color" content="#080d14">
+  <title>{{ report.business_date }} · 竞彩足球概率研究台</title>
+  <style>{{ styles|safe }}
+{{ flag_styles|safe }}</style>
 </head>
-<body>
-  {% macro mdi(name, class_name='icon') -%}
-    <svg class="{{ class_name }}" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="{% if name == 'soccer' %}M16.93 17.12L16.13 15.76L17.59 11.39L19 10.92L20 11.67C20 11.7 20 11.75 20 11.81C20 11.88 20.03 11.94 20.03 12C20.03 13.97 19.37 15.71 18.06 17.21L16.93 17.12M9.75 15L8.38 10.97L12 8.43L15.62 10.97L14.25 15H9.75M12 20.03C11.12 20.03 10.29 19.89 9.5 19.61L8.81 18.1L9.47 17H14.58L15.19 18.1L14.5 19.61C13.71 19.89 12.88 20.03 12 20.03M5.94 17.21C5.41 16.59 4.95 15.76 4.56 14.75C4.17 13.73 3.97 12.81 3.97 12C3.97 11.94 4 11.88 4 11.81C4 11.75 4 11.7 4 11.67L5 10.92L6.41 11.39L7.87 15.76L7.07 17.12L5.94 17.21M11 5.29V6.69L7 9.46L5.66 9.04L5.24 7.68C5.68 7 6.33 6.32 7.19 5.66S8.87 4.57 9.65 4.35L11 5.29M14.35 4.35C15.13 4.57 15.95 5 16.81 5.66C17.67 6.32 18.32 7 18.76 7.68L18.34 9.04L17 9.47L13 6.7V5.29L14.35 4.35M4.93 4.93C3 6.89 2 9.25 2 12S3 17.11 4.93 19.07 9.25 22 12 22 17.11 21 19.07 19.07 22 14.75 22 12 21 6.89 19.07 4.93 14.75 2 12 2 6.89 3 4.93 4.93Z{% elif name == 'field' %}M4,4C2.89,4 2,4.89 2,6V18A2,2 0 0,0 4,20H20A2,2 0 0,0 22,18V6C22,4.89 21.1,4 20,4H4M4,6H11V8.13C9.24,8.59 8,10.18 8,12C8,13.82 9.24,15.41 11,15.87V18H4V16H7V8H4V6M13,6H20V8H17V16H20V18H13V15.87C14.76,15.41 16,13.82 16,12C16,10.18 14.76,8.59 13,8.13V6M4,10H5V14H4V10M19,10H20V14H19V10M13,10.27C13.62,10.63 14,11.29 14,12C14,12.71 13.62,13.37 13,13.73V10.27M11,10.27V13.73C10.38,13.37 10,12.71 10,12C10,11.29 10.38,10.63 11,10.27Z{% elif name == 'whistle' %}M3.76 3.7L2.14 4.88L4.43 8A8.23 8.23 0 0 1 6.35 7.28M11 9V11H18V11.29L13 12.71V15.5A4.5 4.5 0 1 1 8.5 11H9V9H8.5A6.5 6.5 0 1 0 15 15.5V13.91L22 12V9M16.24 3.7L13.85 7H16.32L17.86 4.88M9 2V7H11V2Z{% elif name == 'trophy' %}M18 2C17.1 2 16 3 16 4H8C8 3 6.9 2 6 2H2V11C2 12 3 13 4 13H6.2C6.6 15 7.9 16.7 11 17V19.08C8 19.54 8 22 8 22H16C16 22 16 19.54 13 19.08V17C16.1 16.7 17.4 15 17.8 13H20C21 13 22 12 22 11V2H18M6 11H4V4H6V11M16 11.5C16 13.43 15.42 15 12 15C8.59 15 8 13.43 8 11.5V6H16V11.5M20 11H18V4H20V11Z{% elif name == 'strategy' %}M6.91 5.5L9.21 7.79L7.79 9.21L5.5 6.91L3.21 9.21L1.79 7.79L4.09 5.5L1.79 3.21L3.21 1.79L5.5 4.09L7.79 1.79L9.21 3.21M22.21 16.21L20.79 14.79L18.5 17.09L16.21 14.79L14.79 16.21L17.09 18.5L14.79 20.79L16.21 22.21L18.5 19.91L20.79 22.21L22.21 20.79L19.91 18.5M20.4 6.83L17.18 11L15.6 9.73L16.77 8.23A9.08 9.08 0 0 0 10.11 13.85A4.5 4.5 0 1 1 7.5 13A4 4 0 0 1 8.28 13.08A11.27 11.27 0 0 1 16.43 6.26L15 5.18L16.27 3.6M10 17.5A2.5 2.5 0 1 0 7.5 20A2.5 2.5 0 0 0 10 17.5Z{% else %}M21 3H3C1.9 3 1 3.9 1 5V19C1 20.1 1.9 21 3 21H21C22.1 21 23 20.1 23 19V5C23 3.9 22.1 3 21 3M21 19H3V5H21M5 7H9C9.6 7 10 7.4 10 8V16C10 16.6 9.6 17 9 17H5C4.4 17 4 16.6 4 16V8C4 7.4 4.4 7 5 7M6 9V15H8V9M15 7H19C19.6 7 20 7.4 20 8V16C20 16.6 19.6 17 19 17H15C14.4 17 14 16.6 14 16V8C14 7.4 14.4 7 15 7M16 9V15H18V9M12 11C12.6 11 13 10.6 13 10C13 9.4 12.6 9 12 9C11.4 9 11 9.4 11 10C11 10.6 11.4 11 12 11M12 15C12.6 15 13 14.6 13 14C13 13.4 12.6 13 12 13C11.4 13 11 13.4 11 14C11 14.6 11.4 15 12 15Z{% endif %}" /></svg>
-  {%- endmacro %}
+<body class="{% if report.backtest %}backtest-page{% else %}matchday-page{% endif %}">
+  <a class="skip-link" href="#mainContent">跳到主要内容</a>
+  <svg class="svg-defs" aria-hidden="true">
+    <symbol id="i-ball" viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm3.8 4.2 2.7 1.9-.8 3.2-3.2.3-1.4-2.9 2.7-2.5ZM8.2 6.2l2.7 2.5-1.4 2.9-3.2-.3-.8-3.2 2.7-1.9Zm-1.4 7.2 2.6.2 1.1 3-2 2.1a8 8 0 0 1-2.9-4.6l1.2-.7Zm5.2 5.9-1.5-2.8 1.5-2.3 1.5 2.3-1.5 2.8Zm3.5-.6-2-2.1 1.1-3 2.6-.2 1.2.7a8 8 0 0 1-2.9 4.6Z"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm1 5v4.6l3.2 1.9-1 1.7L11 12.7V7h2Z"/></symbol>
+    <symbol id="i-filter" viewBox="0 0 24 24"><path d="M3 5h18v2H3V5Zm3 6h12v2H6v-2Zm4 6h4v2h-4v-2Z"/></symbol>
+    <symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 19h16v2H2V3h2v16Zm3-2V9h3v8H7Zm5 0V5h3v12h-3Zm5 0v-6h3v6h-3Z"/></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><path d="m6.4 5 5.6 5.6L17.6 5 19 6.4 13.4 12l5.6 5.6-1.4 1.4-5.6-5.6L6.4 19 5 17.6l5.6-5.6L5 6.4 6.4 5Z"/></symbol>
+    <symbol id="i-print" viewBox="0 0 24 24"><path d="M6 2h12v5H6V2Zm10 2H8v3h8V4Zm3 4a3 3 0 0 1 3 3v6h-4v5H6v-5H2v-6a3 3 0 0 1 3-3h14Zm-3 12v-6H8v6h8Zm3-5h1v-4a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v4h2v-3h12v3h1Z"/></symbol>
+  </svg>
 
-  {% macro crest(team, flag, size) -%}
-    {% if flag %}<span class="crest {{ size }} has-flag flag-{{ flag }}" role="img" aria-label="{{ team }}国旗"></span>{% else %}<span class="crest {{ size }}" data-team="{{ team }}"></span>{% endif %}
-  {%- endmacro %}
-
-  {% macro odds_row(market) -%}
-    {% if market %}<div class="odds-row" aria-label="官方竞彩 SP">
-      {% for o in market.outcomes %}<span class="odd">{{ o.label }} <b class="{{ o.trend }}">{{ o.odds|num }}</b></span>{% endfor %}
-    </div>{% else %}<p class="plain-note">当前数据源未提供该玩法的官方 SP；上方仅展示模型概率。</p>{% endif %}
-  {%- endmacro %}
-
-  <header class="topbar">
-    <div class="shell nav">
-      <a class="brand" href="#overview"><span class="brand-index">{{ mdi('soccer') }}</span><span class="brand-copy"><strong>FOOTBALL <em>MATCH LAB</em></strong><small>赛前情报 · 比赛日中心</small></span></a>
-      <nav class="navlinks" aria-label="报告导航"><a class="active" href="#overview">比赛日</a><a href="#picks">重点场次</a><a href="#schedule">赛程中心</a><a href="#method">模型说明</a><a href="#sources">数据来源</a></nav>
-      <div class="navmeta"><span class="status">MATCHDAY · OFFLINE REPORT</span><button class="primary-btn" id="printTop" type="button">打印报告</button></div>
+  <header class="app-header">
+    <div class="app-shell header-inner">
+      <a class="brand" href="#mainContent" aria-label="竞彩足球概率研究台首页">
+        <span class="brand-mark"><svg><use href="#i-ball"/></svg></span>
+        <span><strong>竞彩足球概率研究台</strong><small>赛前概率 · 价格比较 · 风险弃权</small></span>
+      </a>
+      <div class="header-actions">
+        <span class="offline-state">离线报告 · 可复现</span>
+        <button class="icon-button print-button" type="button" aria-label="打印或导出 PDF">
+          <svg><use href="#i-print"/></svg><span>打印</span>
+        </button>
+      </div>
     </div>
   </header>
-  <div class="ticker" aria-label="今日赛程索引"><div class="shell ticker-shell"><span class="ticker-label icon-label">{{ mdi('soccer') }} TODAY'S FIXTURES</span><div class="ticker-track">{% for c in cards %}<a class="ticker-item" href="#schedule"><i>{{ c.match_no }}</i><b>{{ c.home }} vs {{ c.away }}</b>{{ c.kickoff }}</a>{% endfor %}</div></div></div>
 
-  <main>
-    {% set lead = picks[0] if picks else (cards[0] if cards else none) %}
-    <section class="shell hero" id="overview">
-      <div class="hero-top"><span class="matchday-label icon-label">{{ mdi('trophy') }} MATCHDAY CONTROL / {{ report.business_date }}</span><span>官方赛单 {{ cards|length }} 场 · SP {{ official_sp_count }}/{{ cards|length }} · RUN {{ report.run_id[:6]|upper }}</span></div>
-      <div class="hero-stage">
-        <div class="control-summary">
-          <span class="kicker">{{ mdi('whistle') }} 赛前数据状态</span>
-          <div class="control-date"><strong>{{ report.business_date[5:] }}</strong><span>SPORTTERY BUSINESS DATE</span></div>
-          <h1>比赛日 <em>指挥中心</em></h1>
-          <p class="hero-copy">先核验赛程、官方 SP 和更新时间，再阅读模型概率。所有缺失输入都会标记为降级，不用虚构数据补齐。</p>
-          <div class="integrity-list">
-            <div class="integrity-row"><i class="integrity-dot"></i><span>官方赛单</span><strong>{{ cards|length }} 场已接入</strong><b>VERIFIED</b></div>
-            <div class="integrity-row {{ 'warn' if degraded_count else '' }}"><i class="integrity-dot"></i><span>数据覆盖</span><strong>{{ average_coverage|pct0 }} 输入层可用</strong><b class="{{ 'warn' if degraded_count else '' }}">{{ 'DEGRADED' if degraded_count else 'COMPLETE' }}</b></div>
-            <div class="integrity-row {{ '' if intel_evidence_count else 'warn' }}"><i class="integrity-dot"></i><span>赛前证据</span><strong>{{ intel_evidence_count }} 条可核验来源</strong><b class="{{ '' if intel_evidence_count else 'warn' }}">{{ 'SOURCED' if intel_evidence_count else 'MISSING' }}</b></div>
-          </div>
-          <div class="control-meta">GENERATED {{ report.generated_at }} · RUN {{ report.run_id[:12] }}{% if demo_count %} · DEMO DATA DETECTED{% endif %}</div>
-        </div>
-        {% if lead %}<aside class="feature-match">
-          <div class="feature-meta"><strong>FEATURE MATCH · 焦点比赛</strong><span>{{ lead.match_no }} · {{ lead.league }}</span></div>
-          <div class="feature-source-line"><span>{{ lead.kickoff_full }} 开赛</span><span>·</span><span>{{ lead.data_status_label }}</span>{% if lead.source_url %}<span>·</span><a href="{{ lead.source_url }}" rel="noreferrer">官方赛单来源</a>{% endif %}</div>
-          <div class="feature-teams">
-            <div class="feature-team-block">{{ crest(lead.home, lead.home_flag, 'lg') }}<span class="feature-team">{{ lead.home }}</span></div>
-            <span class="feature-vs">VS<small>{{ lead.kickoff }}</small></span>
-            <div class="feature-team-block">{{ crest(lead.away, lead.away_flag, 'lg') }}<span class="feature-team">{{ lead.away }}</span></div>
-          </div>
-          <div class="prob-table" aria-label="焦点比赛概率对照">
-            <div class="prob-row head"><span>概率来源</span><b>主胜</b><b>平局</b><b>客胜</b></div>
-            <div class="prob-row"><span>独立统计层</span><b>{{ lead.model.home|pct0 }}</b><b>{{ lead.model.draw|pct0 }}</b><b>{{ lead.model.away|pct0 }}</b></div>
-            {% if lead.official_probs %}<div class="prob-row"><span>官方 SP 去水</span><b>{{ lead.official_probs.home|pct0 }}</b><b>{{ lead.official_probs.draw|pct0 }}</b><b>{{ lead.official_probs.away|pct0 }}</b></div>{% endif %}
-            {% if lead.official_market_probs %}<div class="prob-row"><span>多玩法联合</span><b>{{ lead.official_market_probs.home|pct0 }}</b><b>{{ lead.official_market_probs.draw|pct0 }}</b><b>{{ lead.official_market_probs.away|pct0 }}</b></div>{% endif %}
-            {% if lead.market %}<div class="prob-row"><span>外部市场</span><b>{{ lead.market.home|pct0 }}</b><b>{{ lead.market.draw|pct0 }}</b><b>{{ lead.market.away|pct0 }}</b></div>{% else %}<div class="prob-row"><span>外部市场</span><b class="missing">未提供同一预测时点快照</b></div>{% endif %}
-            <div class="prob-row final"><span>{{ lead.analysis_label }}</span><b>{{ lead.final.home|pct0 }}</b><b>{{ lead.final.draw|pct0 }}</b><b>{{ lead.final.away|pct0 }}</b></div>
-          </div>
-          {% if lead.odds %}<div class="sp-strip"><span>官方 SP</span><div><b>{{ lead.odds.home|num }}</b><small>主胜</small></div><div><b>{{ lead.odds.draw|num }}</b><small>平局</small></div><div><b>{{ lead.odds.away|num }}</b><small>客胜</small></div></div><div class="source-meta">{{ lead.official_source }} · 更新时间 {{ lead.official_update }}</div>{% endif %}
-          <div class="feature-verdict"><div><span>{{ lead.pick_title }}</span><strong>{{ lead.recommended_label }}</strong></div><div><span>{% if lead.value %}理论长期期望{% else %}分析置信等级{% endif %}</span><b>{% if lead.value %}{{ lead.value.expected_value|pct }}{% else %}{{ lead.confidence_label }}{% endif %}</b></div></div>
-        </aside>{% else %}<aside class="feature-match"><p class="hero-empty">今日暂无可展示赛程。报告会在数据接入后自动生成比赛日中心。</p></aside>{% endif %}
-      </div>
-      <div class="hero-stats">
-        <div class="hero-stat"><span class="icon-wrap">{{ mdi('soccer') }}</span><div><b>{{ cards|length }}</b><span>真实赛单场次</span></div></div>
-        <div class="hero-stat"><span class="icon-wrap">{{ mdi('scoreboard') }}</span><div><b>{{ official_sp_count }}/{{ cards|length }}</b><span>官方 SP 覆盖</span></div></div>
-        <div class="hero-stat"><span class="icon-wrap">{{ mdi('whistle') }}</span><div><b>{{ intel_evidence_count }}</b><span>可核验情报证据</span></div></div>
-        <div class="hero-stat"><span class="icon-wrap">{{ mdi('strategy') }}</span><div><b>{{ degraded_count }}</b><span>存在降级场次</span></div></div>
-      </div>
-    </section>
-
-    <section class="shell section" id="method">
-      <div class="explain">
-        <div><i>01</i><b>模型概率</b><span>结合进球分布、基础实力与市场信息得到的赛果概率，不是确定结果。</span></div>
-        <div><i>02</i><b>概率优势</b><span>模型概率减去竞彩 SP 去水后的市场概率，正数代表模型更乐观。</span></div>
-        <div><i>03</i><b>长期期望</b><span>按当前概率与 SP 反复执行的理论平均收益，不代表这一场一定盈利。</span></div>
-      </div>
-    </section>
-
-    <section class="shell section" id="picks">
-      <div class="section-heading"><div><span class="section-kicker">{{ mdi('trophy') }} FEATURED FIXTURES</span><h2>重点场次</h2><p>比赛日优先席位：只呈现高置信或达到价值阈值的对阵。</p></div><span class="count">{{ picks|length }} 场</span></div>
-      {% if picks %}<div class="picks">
-        {% for item in picks %}<article class="pick">
-          <div class="pick-top"><span class="pick-index">{{ "%02d"|format(loop.index) }}</span><span class="pick-meta">{{ item.match_no }} · {{ item.league }} · {{ item.kickoff }}</span></div>
-          <div class="pick-match">
-            <div class="pick-team">{{ crest(item.home, item.home_flag, 'md') }}<strong>{{ item.home }}</strong></div>
-            <i>VS</i>
-            <div class="pick-team">{{ crest(item.away, item.away_flag, 'md') }}<strong>{{ item.away }}</strong></div>
-          </div>
-          <div class="pick-call"><div><span>{{ item.analysis_label }} · {{ item.pick_title }}</span><h3>{{ item.recommended_label }}</h3></div><div class="pick-value">{% if item.value %}<strong>{{ item.value.expected_value|pct }}</strong><span>理论长期期望 · 优势 {{ item.value.edge|pct }}</span>{% else %}<strong>{{ item.confidence_label }}置信</strong><span>概率集中度较高</span>{% endif %}</div></div>
-        </article>{% endfor %}
-      </div>{% else %}<div class="empty">当前没有达到精选门槛的场次。请查看完整赛单中的概率与风险说明。</div>{% endif %}
-    </section>
-
-    <section class="shell section" id="schedule">
-      <div class="section-heading"><div><span class="section-kicker">{{ mdi('scoreboard') }} FIXTURE BOARD</span><h2>赛程中心</h2><p>按比赛日节目单浏览对阵；展开后进入单场 Match Center。</p></div><span class="count" id="visibleCount">{{ cards|length }} 场</span></div>
-      <div class="toolbar" aria-label="赛单筛选">
-        <label class="sr-only" for="leagueFilter">按联赛筛选</label><select id="leagueFilter"><option value="">全部联赛</option>{% for league in leagues %}<option value="{{ league }}">{{ league }}</option>{% endfor %}</select>
-        <button class="filter-btn active" type="button" data-filter="all">全部</button>
-        <button class="filter-btn" type="button" data-filter="high">高置信</button>
-        <button class="filter-btn" type="button" data-filter="value">正期望</button>
-        <div class="toolbar-spacer"></div><button class="tool-btn" id="expandAll" type="button">展开全部</button><button class="tool-btn" id="printReport" type="button">打印 / PDF</button>
-      </div>
-
-      <div class="match-list" id="matchList">
-      {% for c in cards %}
-        <details class="match" data-league="{{ c.league }}" data-confidence="{{ c.confidence }}" data-value="{{ c.value_flag }}" {% if loop.first %}open{% endif %}>
-          <summary>
-            <div class="match-head"><div class="match-id"><span class="badge-chip">{{ mdi('soccer') }}</span><div><b>{{ c.match_no }}</b><span>{{ c.league }}<br>{{ c.kickoff }} 开赛</span></div></div><div class="match-teams"><div class="mt-row"><span class="mt-side home"><span class="mt-name">{{ c.home }}</span>{{ crest(c.home, c.home_flag, 'sm') }}</span><span class="mt-vs">VS</span><span class="mt-side away">{{ crest(c.away, c.away_flag, 'sm') }}<span class="mt-name">{{ c.away }}</span></span></div><p>{{ c.pick_title }} {{ c.recommended_label }} · 期望进球 {{ c.xg_home|num }} : {{ c.xg_away|num }}</p></div></div>
-            <div class="summary-prob"><span class="prob-caption">90' RESULT PROBABILITY · 90分钟赛果</span><div class="probbar"><i class="home" style="width:{{ c.final.home*100 }}%"></i><i class="draw" style="width:{{ c.final.draw*100 }}%"></i><i class="away" style="width:{{ c.final.away*100 }}%"></i></div><div class="prob-legend"><span><em></em><b>{{ c.final.home|pct0 }}</b><small>主胜</small></span><span><em></em><b>{{ c.final.draw|pct0 }}</b><small>平</small></span><span><em></em><b>{{ c.final.away|pct0 }}</b><small>客胜</small></span></div></div>
-            <div class="summary-badges"><span class="badge primary">{{ c.pick_title }} {{ c.recommended_label }}</span><span class="badge {{ 'primary' if c.confidence == 'high' else 'amber' if c.confidence == 'mid' else '' }}">{{ c.confidence_label }}置信</span>{% if c.value %}<span class="badge {{ 'primary' if c.value.flag == 'value' else 'red' if c.value.flag == 'risk' else 'amber' }}">{{ c.value.flag_label }}</span>{% endif %}<span class="badge">官方玩法 {{ c.official_market_count }}/5 · {{ c.sale_label }}</span><span class="badge {{ 'amber' if c.is_degraded else 'primary' }}">{{ c.data_status_label }}</span><span class="open-copy"><span class="open-copy-text">查看完整分析</span><i class="chevron" aria-hidden="true"></i></span></div>
-          </summary>
-          <div class="detail">
-            <div class="match-center-head"><span class="icon-label">{{ mdi('scoreboard') }} MATCH CENTER · 单场比赛中心</span><span>{{ c.match_no }} / {{ c.home }} vs {{ c.away }} / 数据覆盖 {{ c.coverage_count }}/5</span></div>
-            <div class="data-ribbon" aria-label="本场数据来源覆盖">
-              {% for layer in c.data_layers %}<div class="data-layer {{ 'ok' if layer.available else '' }}"><div class="data-layer-head"><i class="data-dot"></i><span>{{ layer.label }}</span></div><strong>{{ layer.source }}</strong><small>{{ layer.updated_at }}</small></div>{% endfor %}
-            </div>
-            <div class="tabs" role="tablist" aria-label="{{ c.home }}对{{ c.away }}分析维度">
-              <button class="tab-btn" type="button" role="tab" aria-selected="true" data-tab="overview">结论总览</button><button class="tab-btn" type="button" role="tab" aria-selected="false" data-tab="markets">赔率价值</button><button class="tab-btn" type="button" role="tab" aria-selected="false" data-tab="scores">进球比分</button><button class="tab-btn" type="button" role="tab" aria-selected="false" data-tab="intel">情报依据</button>
-            </div>
-
-            <section class="tab-panel" data-panel="overview">
-              <div class="verdict"><div class="verdict-head"><b>赛前结论</b><span>{{ c.analysis_label }} · {{ c.confidence_label }}置信 · {{ c.data_status_label }}</span></div>{{ c.summary }}</div>
-              <div class="overview-grid">
-                <div class="card"><h4>模型与市场概率对照</h4><div class="probbar wdl-large"><i class="home" style="width:{{ c.final.home*100 }}%"></i><i class="draw" style="width:{{ c.final.draw*100 }}%"></i><i class="away" style="width:{{ c.final.away*100 }}%"></i></div><div class="prob-legend"><span><em></em><b>{{ c.final.home|pct0 }}</b><small>主胜</small></span><span><em></em><b>{{ c.final.draw|pct0 }}</b><small>平局</small></span><span><em></em><b>{{ c.final.away|pct0 }}</b><small>客胜</small></span></div>
-                  <div class="compare"><div class="compare-row"><span>概率来源</span><span>主胜</span><span>平</span><span>客胜</span></div>{% for label, probs, row_class in [('独立统计层', c.model, ''), ('官方SP去水', c.official_probs, 'official-row'), ('官方多玩法', c.official_market_probs, 'official-row'), ('外部市场', c.market, ''), (c.analysis_label, c.final, 'final-row')] %}{% if probs %}<div class="compare-row {{ row_class }}"><span>{{ label }}</span>{% for v in probs.vector() %}<div class="compare-cell"><i style="width:{{ v*100 }}%"></i><b>{{ v|pct0 }}</b></div>{% endfor %}</div>{% else %}<div class="compare-row"><span>{{ label }}</span><div class="compare-cell" style="grid-column:2/-1;text-align:left"><b>未提供</b></div></div>{% endif %}{% endfor %}</div>
-                  {% if c.probability_delta %}<div class="compare-row"><span>相对官方</span>{% for key in ['home','draw','away'] %}{% set delta = c.probability_delta[key] %}<div class="compare-cell"><b class="{{ 'delta-pos' if delta > 0 else 'delta-neg' if delta < 0 else '' }}">{{ '%+.1f%%'|format(delta*100) }}</b></div>{% endfor %}</div>{% endif %}
-                  <p class="source-meta">官方 SP：{{ c.official_source }} · {{ c.official_update }}；外部市场未提供时不会伪装成官方概率。</p>
-                </div>
-                <div class="card"><h4>赔率价值与风险边界</h4>{% if c.value %}<div class="value-box"><div class="value-metric {{ 'good' if c.value.expected_value > 0 else 'warn' }}"><b>{{ c.value.expected_value|pct }}</b><span>理论长期期望</span></div><div class="value-metric {{ 'good' if c.value.edge > 0 else 'warn' }}"><b>{{ c.value.edge|pct }}</b><span>相对官方隐含概率</span></div></div><p class="plain-note">模型选择 {{ c.value.pick_label }}，对应官方 SP {{ c.value.odds|num }}。该指标描述长期统计关系，不代表本场收益。</p>{% else %}<p class="plain-note">本场没有形成可计算的官方 SP 价值信号，建议优先参考概率分布和风险说明。</p>{% endif %}<h4 style="margin-top:16px">竞彩官方胜平负 SP</h4>{{ odds_row(c.official_markets.get('had')) }}<p class="source-meta">更新时间 {{ c.official_update }}</p></div>
-              </div>
-            </section>
-
-            <section class="tab-panel" data-panel="markets" hidden>
-              <div class="source-band"><span><strong>官方赔率快照</strong> · {{ c.official_source }} · {{ c.official_update }}</span><span>当前分析模式：{{ c.analysis_label }}</span></div>
-              <div class="market-grid">
-                <article class="play"><div class="play-head"><div><h4>胜平负</h4><p>90 分钟赛果，不含加时与点球。</p></div><span class="source-tag live">{{ c.analysis_label }}</span></div><div class="play-result"><div><span>{{ c.pick_title }}</span><strong>{{ c.recommended_label }}</strong></div><b>{{ c.final.get(c.recommended)|pct0 }}</b></div>{{ odds_row(c.official_markets.get('had')) }}</article>
-                <article class="play"><div class="play-head"><div><h4>让球胜平负</h4><p>{% if c.markets.handicap %}主队按 {{ c.markets.handicap.line_label }} 球后再判断赛果。{% else %}本场暂无官方让球线。{% endif %}</p></div><span class="source-tag">{{ c.analysis_label }}</span></div>{% if c.markets.handicap %}<div class="play-result"><div><span>{{ c.pick_title }}</span><strong>{{ c.markets.handicap.pick_label }}</strong></div><b>{{ c.markets.handicap.pick_prob|pct0 }}</b></div><div class="probbar"><i class="home" style="width:{{ c.markets.handicap.home*100 }}%"></i><i class="draw" style="width:{{ c.markets.handicap.draw*100 }}%"></i><i class="away" style="width:{{ c.markets.handicap.away*100 }}%"></i></div><div class="prob-legend"><span><em></em>{{ c.markets.handicap.home|pct0 }}<small>让胜</small></span><span><em></em>{{ c.markets.handicap.draw|pct0 }}<small>让平</small></span><span><em></em>{{ c.markets.handicap.away|pct0 }}<small>让负</small></span></div>{% endif %}<div style="margin-top:12px">{{ odds_row(c.official_markets.get('hhad')) }}</div></article>
-                <article class="play"><div class="play-head"><div><h4>比分</h4><p>优先展示当前比分矩阵概率最高的几个比分。</p></div><span class="source-tag">{{ c.analysis_label }}</span></div><div class="score-pills">{% for s in c.top_scores %}<span class="score-pill">{{ s.label }} <b>{{ s.p|pct0 }}</b></span>{% endfor %}</div><div style="margin-top:12px">{{ odds_row(c.official_markets.get('crs')) }}</div></article>
-                <article class="play"><div class="play-head"><div><h4>总进球</h4><p>双方 90 分钟进球数之和。</p></div><span class="source-tag">{{ c.analysis_label }}</span></div>{% set gmax = c.markets.goals_distribution|map(attribute='p')|max %}<div class="dist">{% for g in c.markets.goals_distribution %}<div class="dist-col"><b>{{ g.p|pct0 }}</b><i style="height:{{ (g.p/gmax*100) if gmax else 0 }}%"></i><span>{{ g.label }}</span></div>{% endfor %}</div><div style="margin-top:12px">{{ odds_row(c.official_markets.get('ttg')) }}</div></article>
-                <article class="play wide"><div class="play-head"><div><h4>半全场</h4><p>行代表半场结果，列代表全场结果；例如“平 / 主”就是半场平、全场主胜。</p></div><span class="source-tag">{{ c.analysis_label }} + 官方 SP</span></div>{% set hmax = c.markets.htft.grid|map('max')|max %}<table class="htft"><tr><th></th><th>全场主胜</th><th>全场平</th><th>全场客胜</th></tr>{% set rowlabels = ['半场主胜','半场平','半场客胜'] %}{% for row in c.markets.htft.grid %}<tr><td class="rowhead">{{ rowlabels[loop.index0] }}</td>{% for v in row %}<td class="{{ 'top' if v == hmax else '' }}">{{ v|pct0 }}</td>{% endfor %}</tr>{% endfor %}</table><div style="margin-top:12px">{{ odds_row(c.official_markets.get('hafu')) }}</div></article>
-              </div>
-            </section>
-
-            <section class="tab-panel" data-panel="scores" hidden>
-              <div class="source-band"><span><strong>{{ c.analysis_label }}</strong> · Dixon-Coles 比分矩阵</span><span>期望进球 {{ c.xg_home|num }} : {{ c.xg_away|num }} · 多玩法校准 {{ c.calibrated_markets|join('/') if c.calibrated_markets else '未启用' }}</span></div>
-              <div class="matrix-wrap"><div class="matrix" data-matrix='{{ c.markets.tilted_matrix|tojson }}'></div><aside class="card matrix-guide"><h4>比分热力图</h4><p>纵向是主队进球，横向是客队进球。颜色越亮，模型给出的概率越高；鼠标停留可看精确概率。</p><dl><dt>最可能比分</dt><dd>{{ c.top_scores[0].label if c.top_scores else '—' }}</dd><dt>期望进球</dt><dd>{{ c.xg_home|num }} : {{ c.xg_away|num }}</dd><dt>双方进球</dt><dd>{{ c.markets.btts.yes|pct0 }}</dd><dt>大于 2.5 球</dt><dd>{{ c.markets.over_under.main.over|pct0 }}</dd></dl></aside></div>
-            </section>
-
-            <section class="tab-panel" data-panel="intel" hidden>
-              <div class="coverage"><div class="coverage-score"><b>{{ c.coverage_count }}/5</b><span>赛前输入层覆盖</span></div><div class="coverage-list">{% for layer in c.data_layers %}<div class="coverage-item {{ 'ok' if layer.available else '' }}">{{ layer.label }}<br>{{ '已获取' if layer.available else '明确缺失' }}</div>{% endfor %}</div></div>
-              <div class="overview-grid"><div class="card"><h4>模型判断依据</h4><ul class="reason-list">{% for reason in c.reasons %}<li>{{ reason }}</li>{% endfor %}</ul>{% if c.warnings %}<h4 style="margin-top:16px">风险与降级</h4><ul class="warning-list">{% for warning in c.warnings %}<li>{{ warning }}</li>{% endfor %}</ul>{% endif %}<div class="missing-box"><h4>尚未获得的数据</h4><ul>{% for item in c.intel_missing %}<li>{{ item }}</li>{% endfor %}{% if not c.home_features.available or not c.away_features.available %}<li>国家队 Elo / xG 特征快照</li>{% endif %}{% if not c.market %}<li>同一预测时点的外部市场赔率</li>{% endif %}</ul></div></div><div class="card"><h4>可核验赛前情报 · 完整度 {{ c.intel_completeness|pct0 }}</h4>{% if c.intel and c.intel.evidences %}<ul class="evidence">{% for e in c.intel.evidences %}<li><a href="{{ e.url }}" rel="noreferrer">{{ e.title }}</a><span class="evidence-meta">发布 {{ e.published_at }} · 可信度 {{ e.credibility|pct0 }} · 影响方向 {{ outcome_labels[e.outcome.value] }}</span>{% if e.note %}<br>{{ e.note }}{% endif %}</li>{% endfor %}</ul>{% else %}<p class="plain-note">当前没有已验证的外部赛前情报。模型不会用无来源消息补齐伤停、首发或更衣室信息。</p>{% endif %}</div></div>
-            </section>
-          </div>
-        </details>
-      {% endfor %}
-      </div>
-    </section>
-
-    {% if report.backtest %}<section class="shell section"><div class="section-heading"><div><span class="section-kicker">{{ mdi('strategy') }} MODEL FORM · 模型状态</span><h2>回测与校准</h2><p>只使用预测时点之前的数据，避免“偷看答案”。</p></div></div><div class="metrics"><div class="metric"><span>样本</span><strong>{{ report.backtest.matches }}</strong></div><div class="metric"><span>命中率</span><strong>{{ report.backtest.accuracy|pct }}</strong></div><div class="metric"><span>Brier 分数</span><strong>{{ report.backtest.brier|num }}</strong></div><div class="metric"><span>价值策略 ROI</span><strong>{{ report.backtest.roi|pct }}</strong></div></div><div class="charts"><div class="card"><h4>累计收益曲线</h4><svg id="equityChart" class="chart" viewBox="0 0 800 200" role="img" aria-label="回测累计收益曲线"></svg></div><div class="card"><h4>可靠性曲线</h4><svg id="reliabilityChart" class="chart" viewBox="0 0 800 200" role="img" aria-label="预测可靠性曲线"></svg></div></div></section>{% endif %}
-
-    <section class="shell section" id="sources"><div class="section-heading"><div><span class="section-kicker">{{ mdi('whistle') }} MATCH OFFICIALS · 数据来源</span><h2>数据来源与降级说明</h2><p>数据缺失会明确标注，不会自动伪造伤停、首发或官方 SP。</p></div></div><div class="source-list">{% for source in report.sources %}<span>{{ source }}</span>{% endfor %}</div>{% if report.warnings %}<ul class="warning-list">{% for warning in report.warnings %}<li>{{ warning }}</li>{% endfor %}</ul>{% endif %}</section>
+  <main id="mainContent" class="app-shell">
+    {% include "partials/status_bar.html" %}
+    {% if demo_count %}
+      <div class="notice danger"><strong>演示数据</strong><span>本报告包含虚构比赛，只用于验证运行环境和界面。</span></div>
+    {% endif %}
+    {% if report.backtest %}
+      {% include "partials/backtest.html" %}
+    {% else %}
+      {% include "partials/match_table.html" %}
+    {% endif %}
+    {% include "partials/sources.html" %}
   </main>
 
-  <footer class="report-footer"><div class="shell footer-grid">
-    <section class="footer-block footer-brand"><span class="footer-label">{{ mdi('soccer') }} FOOTBALL MATCH LAB</span><strong>赛前比赛日研究报告</strong><p>模型输出、官方市场与可核验证据的离线 Match Center。每次生成均保留独立运行标识，便于复现与追踪。</p></section>
-    <section class="footer-block footer-compliance"><span class="footer-label">{{ mdi('whistle') }} FAIR PLAY · 合规边界</span><div class="footer-compliance-card"><strong>理性购彩 · 未成年人禁止购彩</strong><p>本报告仅用于概率研究与信息参考，不构成投注建议、投注承诺或任何收益保证；不提供下注通道，也不代客操作。</p></div></section>
-    <section class="footer-block"><span class="footer-label">{{ mdi('scoreboard') }} REPORT METADATA</span><dl class="footer-meta"><div><dt>业务日期</dt><dd>{{ report.business_date }}</dd></div><div><dt>生成时间</dt><dd>{{ report.generated_at }}</dd></div><div><dt>运行标识</dt><dd>{{ report.run_id[:12] }}</dd></div></dl></section>
-  </div></footer>
+  {% for c in cards %}
+    {% include "partials/match_dialog.html" %}
+  {% endfor %}
+
+  <footer class="report-footer">
+    <div class="app-shell footer-grid">
+      <div><strong>概率不是承诺</strong><p>模型只描述赛前信息下的概率分布。没有独立优势时，弃权是正式结论。</p></div>
+      <div><strong>理性购彩 · 未成年人禁止购彩</strong><p>本报告不提供下注通道、不代客操作，也不保证命中率或收益。</p></div>
+      <dl>
+        <div><dt>生成时间</dt><dd>{{ report.generated_at }}</dd></div>
+        <div><dt>运行标识</dt><dd>{{ report.run_id[:12] }}</dd></div>
+        <div><dt>协议版本</dt><dd>{{ report.schema_version }}</dd></div>
+      </dl>
+    </div>
+  </footer>
 
   <script type="application/json" id="reportData">{{ report_json|safe }}</script>
-  <script>
-    (() => {
-      const data = JSON.parse(document.getElementById('reportData').textContent);
-      const $ = selector => document.querySelector(selector);
-      const $$ = selector => [...document.querySelectorAll(selector)];
-      const league = $('#leagueFilter');
-      const filterButtons = $$('.filter-btn');
-      let mode = 'all';
-
-      const CREST_COLORS = [
-        ['#2F6FED', '#5AA9FF'], ['#E9960F', '#FFC15C'], ['#17A673', '#5BD1A6'],
-        ['#E6483F', '#FF8A8A'], ['#8B5CF6', '#C4A6FF'], ['#0EA5E9', '#7CE0FF'],
-        ['#F43F9E', '#FF9FCB'], ['#64748B', '#A6B2C2'],
-      ];
-      $$('.crest[data-team]').forEach(node => {
-        const name = node.dataset.team || '';
-        let hash = 0;
-        for (const ch of name) hash = (hash * 31 + ch.codePointAt(0)) >>> 0;
-        const [from, to] = CREST_COLORS[hash % CREST_COLORS.length];
-        node.style.background = `linear-gradient(135deg, ${from}, ${to})`;
-        node.textContent = [...name][0] || '?';
-      });
-
-      function filterMatches() {
-        let visible = 0;
-        $$('.match').forEach(item => {
-          const hidden = (league.value && item.dataset.league !== league.value)
-            || (mode === 'high' && item.dataset.confidence !== 'high')
-            || (mode === 'value' && item.dataset.value !== 'value');
-          item.hidden = Boolean(hidden);
-          if (!hidden) visible += 1;
-        });
-        $('#visibleCount').textContent = `${visible} 场`;
-      }
-
-      league.addEventListener('change', filterMatches);
-      filterButtons.forEach(button => {
-        button.setAttribute('aria-pressed', String(button.classList.contains('active')));
-        button.addEventListener('click', () => {
-          mode = button.dataset.filter;
-          filterButtons.forEach(item => {
-            const active = item === button;
-            item.classList.toggle('active', active);
-            item.setAttribute('aria-pressed', String(active));
-          });
-          filterMatches();
-        });
-      });
-
-      $('#expandAll').addEventListener('click', event => {
-        const items = $$('.match:not([hidden])');
-        const shouldOpen = items.some(item => !item.open);
-        items.forEach(item => { item.open = shouldOpen; });
-        event.currentTarget.textContent = shouldOpen ? '收起全部' : '展开全部';
-      });
-      ['#printReport', '#printTop'].forEach(id => $(id)?.addEventListener('click', () => window.print()));
-
-      // 页签支持方向键切换，保证键盘用户可以完整浏览单场研究面板。
-      $$('.match').forEach(match => {
-        const tabs = [...match.querySelectorAll('.tab-btn')];
-        const activate = button => {
-          const tab = button.dataset.tab;
-          tabs.forEach(item => item.setAttribute('aria-selected', String(item === button)));
-          match.querySelectorAll('.tab-panel').forEach(panel => { panel.hidden = panel.dataset.panel !== tab; });
-        };
-        match.addEventListener('toggle', () => {
-          match.querySelector('.open-copy-text').textContent = match.open ? '收起完整分析' : '查看完整分析';
-        });
-        tabs.forEach((button, index) => {
-          button.addEventListener('click', () => activate(button));
-          button.addEventListener('keydown', event => {
-            const offset = event.key === 'ArrowRight' ? 1 : event.key === 'ArrowLeft' ? -1 : 0;
-            if (!offset && !['Home', 'End'].includes(event.key)) return;
-            event.preventDefault();
-            const target = event.key === 'Home' ? 0 : event.key === 'End' ? tabs.length - 1 : (index + offset + tabs.length) % tabs.length;
-            tabs[target].focus();
-            activate(tabs[target]);
-          });
-        });
-      });
-
-      $$('.matrix').forEach(element => {
-        const matrix = JSON.parse(element.dataset.matrix);
-        const size = Math.min(matrix.length, 7);
-        const max = Math.max(...matrix.slice(0, size).map(row => Math.max(...row.slice(0, size))));
-        element.style.gridTemplateColumns = `repeat(${size},minmax(36px,1fr))`;
-        for (let home = 0; home < size; home += 1) for (let away = 0; away < size; away += 1) {
-          const probability = matrix[home][away];
-          const cell = document.createElement('span');
-          cell.className = 'cell';
-          cell.title = `主队 ${home} 球，客队 ${away} 球：${(probability * 100).toFixed(2)}%`;
-          cell.style.background = `rgba(79,141,255,${(.12 + .62 * probability / (max || 1)).toFixed(3)})`;
-          cell.textContent = probability > .018 ? `${(probability * 100).toFixed(0)}%` : '';
-          element.appendChild(cell);
-        }
-      });
-
-      const equity = $('#equityChart');
-      if (equity && data.backtest) {
-        const values = data.backtest.equity_curve || [];
-        if (values.length) {
-          const min = Math.min(0, ...values), max = Math.max(1, ...values);
-          const x = index => 30 + index * 740 / Math.max(1, values.length - 1);
-          const y = value => 180 - (value - min) * 150 / (max - min || 1);
-          const ns = 'http://www.w3.org/2000/svg';
-          for (let index = 0; index < 5; index += 1) {
-            const line = document.createElementNS(ns, 'line');
-            [['x1', '30'], ['x2', '770'], ['y1', String(28 + index * 38)], ['y2', String(28 + index * 38)], ['class', 'guide']].forEach(([key, value]) => line.setAttribute(key, value));
-            equity.appendChild(line);
-          }
-          const path = document.createElementNS(ns, 'path');
-          path.setAttribute('d', values.map((value, index) => `${index ? 'L' : 'M'}${x(index)},${y(value)}`).join(' '));
-          path.setAttribute('class', 'chart-line');
-          equity.appendChild(path);
-        }
-      }
-
-      const reliability = $('#reliabilityChart');
-      if (reliability && data.backtest) {
-        const rows = data.backtest.reliability || [];
-        const ns = 'http://www.w3.org/2000/svg', x = value => 30 + value * 740, y = value => 180 - value * 150;
-        const diagonal = document.createElementNS(ns, 'line');
-        [['x1', x(0)], ['y1', y(0)], ['x2', x(1)], ['y2', y(1)], ['class', 'guide']].forEach(([key, value]) => diagonal.setAttribute(key, value));
-        reliability.appendChild(diagonal);
-        if (rows.length) {
-          const path = document.createElementNS(ns, 'path');
-          path.setAttribute('d', rows.map((row, index) => `${index ? 'L' : 'M'}${x((row.lower + row.upper) / 2)},${y(row.actual)}`).join(' '));
-          path.setAttribute('class', 'chart-line');
-          reliability.appendChild(path);
-        }
-      }
-    })();
-  </script>
+  <script>{{ scripts|safe }}</script>
 </body>
 </html>

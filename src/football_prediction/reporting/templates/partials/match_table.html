@@ -1,0 +1,83 @@
+<section id="matchList" class="workspace" aria-labelledby="matchListTitle">
+  <div class="section-heading">
+    <div><span class="eyebrow">赛单</span><h2 id="matchListTitle">概率与价格工作台</h2></div>
+    <span id="visibleCount" class="result-count">{{ cards|length }} 场</span>
+  </div>
+
+  <div class="filter-bar" aria-label="赛单筛选">
+    <label>
+      <span>联赛</span>
+      <select id="leagueFilter">
+        <option value="">全部联赛</option>
+        {% for league in leagues %}<option value="{{ league }}">{{ league }}</option>{% endfor %}
+      </select>
+    </label>
+    <label class="search-field">
+      <span>球队</span>
+      <input id="teamSearch" type="search" placeholder="搜索主队或客队" autocomplete="off">
+    </label>
+    <label>
+      <span>排序</span>
+      <select id="sortFilter">
+        <option value="kickoff">按开赛时间</option>
+        <option value="edge">按概率优势</option>
+        <option value="confidence">按置信度</option>
+      </select>
+    </label>
+    <div class="segmented" role="group" aria-label="决策状态">
+      <button class="filter-button active" type="button" data-filter="all" aria-pressed="true">全部</button>
+      <button class="filter-button" type="button" data-filter="candidate" aria-pressed="false">候选价值</button>
+      <button class="filter-button" type="button" data-filter="lean" aria-pressed="false">有方向</button>
+      <button class="filter-button" type="button" data-filter="no_edge" aria-pressed="false">无优势</button>
+      <button class="filter-button" type="button" data-filter="abstain" aria-pressed="false">弃权</button>
+    </div>
+  </div>
+
+  <div class="match-table" role="table" aria-label="竞彩足球赛单">
+    <div class="match-table-head" role="row">
+      <span role="columnheader">时间 / 联赛</span>
+      <span role="columnheader">对阵</span>
+      <span role="columnheader">校准概率</span>
+      <span role="columnheader">公平赔率</span>
+      <span role="columnheader">竞彩 SP</span>
+      <span role="columnheader">Edge</span>
+      <span role="columnheader">结论</span>
+    </div>
+    <div id="matchRows" class="match-rows">
+      {% for c in cards %}
+      <button
+        class="match-row"
+        type="button"
+        role="row"
+        data-dialog="{{ c.dialog_id }}"
+        data-league="{{ c.league }}"
+        data-state="{{ c.decision_state }}"
+        data-edge="{{ c.edge if c.edge is not none else -9 }}"
+        data-confidence="{{ c.confidence_rank }}"
+        data-kickoff="{{ c.kickoff_full }}"
+        data-search="{{ (c.home ~ ' ' ~ c.away)|lower }}"
+        aria-haspopup="dialog"
+        aria-controls="{{ c.dialog_id }}"
+      >
+        <span class="time-cell" role="cell" data-label="时间 / 联赛"><strong>{{ c.kickoff }}</strong><small>{{ c.match_no }} · {{ c.league }}</small></span>
+        <span class="fixture-cell" role="cell" data-label="对阵">
+          <span class="team-line"><span class="crest sm {% if c.home_flag %}has-flag flag-{{ c.home_flag }}{% endif %}" data-team="{{ c.home }}"></span><strong>{{ c.home }}</strong></span>
+          <span class="team-line"><span class="crest sm {% if c.away_flag %}has-flag flag-{{ c.away_flag }}{% endif %}" data-team="{{ c.away }}"></span><strong>{{ c.away }}</strong></span>
+        </span>
+        <span class="triple-cell probability-cell" role="cell" data-label="校准概率"><b>{{ c.final.home|pct0 }}</b><b>{{ c.final.draw|pct0 }}</b><b>{{ c.final.away|pct0 }}</b><small>主 / 平 / 客</small></span>
+        <span class="triple-cell" role="cell" data-label="公平赔率"><b>{{ c.fair_odds.home|num }}</b><b>{{ c.fair_odds.draw|num }}</b><b>{{ c.fair_odds.away|num }}</b><small>主 / 平 / 客</small></span>
+        <span class="triple-cell" role="cell" data-label="竞彩 SP">
+          {% if c.target_odds %}<b>{{ c.target_odds.home|num }}</b><b>{{ c.target_odds.draw|num }}</b><b>{{ c.target_odds.away|num }}</b>{% else %}<b class="span-three">待开售</b>{% endif %}
+          <small>主 / 平 / 客</small>
+        </span>
+        <span class="edge-cell {% if c.edge and c.edge > 0 %}positive{% endif %}" role="cell" data-label="Edge"><strong>{{ c.edge|signed_pct }}</strong><small>{{ c.value.pick_label if c.value else "不可比较" }}</small></span>
+        <span class="decision-cell" role="cell" data-label="结论">
+          <span class="decision-badge state-{{ c.decision_state }}">{{ c.decision_label }}</span>
+          <small>{{ c.confidence_label }}置信 · {{ c.data_quality_label }}</small>
+        </span>
+      </button>
+      {% endfor %}
+    </div>
+    {% if not cards %}<div class="empty-state">当前没有可展示赛程。</div>{% endif %}
+  </div>
+</section>
